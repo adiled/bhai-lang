@@ -42,11 +42,11 @@ python3 rishta.py examples/rishta_gdpr.bhai
 
 ```
 # examples/hello.bhai  —  python3 bhai.py examples/hello.bhai
-بول "ابے اوئے، سلام دنیا!"
+پھوٹ "ابے اوئے، سلام دنیا!"
 
 سن شہر = "کراچی"
 اگر شہر == "کراچی" {
-    بول "بھائی، یہ تو اپنا شہر ہے"
+    پھوٹ "بھائی، یہ تو اپنا شہر ہے"
 }
 ```
 
@@ -56,19 +56,20 @@ python3 rishta.py examples/rishta_gdpr.bhai
 
 ### Keywords
 
-| Keyword | Transliteration | Role |
-|---|---|---|
-| `سن` | sun | variable declaration (let) |
-| `کام` | kaam | function declaration |
-| `واپس` | wapas | return |
-| `اگر` / `ورنہ` | agar / warna | if / else |
-| `جبتک` | jabtak | while |
-| `ہرایک` … `میں` | har-ek … mein | for-each … in |
-| `توڑ` / `جاری` | toR / jaari | break / continue |
-| `بول` | bol | print |
-| `پوچھ` | pooch | input() |
-| `سچ` / `جھوٹ` / `خالی` | sach / jhoot / khaali | true / false / null |
-| `اور` / `یا` / `نہیں` | aur / ya / nahin | and / or / not |
+| Keyword | Transliteration | Role | Karachi origin |
+|---|---|---|---|
+| `سن` | sun | variable declaration (let) | "listen up" |
+| `کام` | kaam | function declaration | "work" |
+| `کلٹی` | kalti | return | "flip back" (see glossary: escape/flee) |
+| `اگر` / `ورنہ` | agar / warna | if / else | |
+| `جبتک` | jabtak | while | "as long as" |
+| `ہرایک` … `میں` | har-ek … mein | for-each … in | |
+| `شاٹ` | shaaT | break | "short-circuit" (dimaagh shaat) |
+| `کٹا` | kaTa | continue | "cut / skip past" |
+| `پھوٹ` | phooT | print | "burst out / say it" |
+| `پوچھ` | pooch | input() | "ask" |
+| `جنین` / `کدو` / `نلا` | janeen / kaddu / nulla | true / false / null | genuine / pumpkin-dud / null |
+| `اور` / `یا` / `نا` | aur / ya / naa | and / or / not | |
 
 ### Operators
 
@@ -83,19 +84,19 @@ Numeric literals accept Urdu digits: `۵۰` = 50. Strings use `"..."` with stand
 | `لمبائی(x)` | length of string / list |
 | `قسم(x)` | type name |
 | `نمبر(x)` / `لفظ(x)` | cast to number / string |
-| `شامل(list, x)` / `نکال(list)` | push / pop |
+| `ڈال(list, x)` / `نکال(list)` | push / pop |
 | `ترتیب(n)` / `ترتیب(a, b)` / `ترتیب(a, b, step)` | range |
 
 ### Example — recursion + loops
 
 ```
 کام فیکٹوریل(ن) {
-    اگر ن <= 1 { واپس 1 }
-    واپس ن * فیکٹوریل(ن - 1)
+    اگر ن <= 1 { کلٹی 1 }
+    کلٹی ن * فیکٹوریل(ن - 1)
 }
 
 ہرایک ای میں ترتیب(1, 6) {
-    بول ای, "! =", فیکٹوریل(ای)
+    پھوٹ ای, "! =", فیکٹوریل(ای)
 }
 ```
 
@@ -104,16 +105,16 @@ Numeric literals accept Urdu digits: `۵۰` = 50. Strings use `"..."` with stand
 ```
 کام بنانے_والا(شروع) {
     سن گنتی = شروع
-    کام اگلا_نمبر() {
+    کام اگلا() {
         گنتی = گنتی + 1
-        واپس گنتی
+        کلٹی گنتی
     }
-    واپس اگلا_نمبر
+    کلٹی اگلا
 }
 
 سن کاؤنٹر = بنانے_والا(10)
-بول کاؤنٹر()   # 11
-بول کاؤنٹر()   # 12
+پھوٹ کاؤنٹر()   # 11
+پھوٹ کاؤنٹر()   # 12
 ```
 
 ---
@@ -134,11 +135,11 @@ Each کردار carries:
 | `trust` | `جانی` · `بھائی` · — | intimate · trusted · default |
 | `sensitivity` | `حساس` · — | PII / sensitive · default |
 
-**Propagation rules** (enforced by the runtime at every operation):
+**Propagation rules** (enforced at every operation):
 
-- Consent — if any ancestor is revoked (`شاپنگ`), the descendant becomes `دو نمبری` (tainted) and its value is hidden on read.
-- Trust — derived values inherit the **maximum** trust of their parents (`جانی` > `بھائی` > none).
-- Sensitivity — derived values inherit `حساس` if **any** parent is `حساس`.
+- **Consent** — if any ancestor is revoked (`شاپنگ`), the descendant becomes `دو نمبری` (tainted) and its value is hidden on read.
+- **Trust** — derived values inherit the **maximum** trust of their parents (`جانی` > `بھائی` > none).
+- **Sensitivity** — derived values inherit `حساس` if **any** parent is `حساس`.
 
 ### Declaration
 
@@ -175,7 +176,7 @@ Every binary operation creates a new کردار whose parents are the operands. 
 | `رساؤ <name>` | **PII leak query** — every `حساس` ancestor of `<name>` |
 | `رشتہ: <a> کا <rel> <b>` | explicitly assert a lineage edge |
 | `رشتہ <a> سے <b>` | query the rishta path between two کردار |
-| `بول <expr>` | print with consent/trust/sensitivity tags |
+| `پھوٹ <expr>` | print with consent / trust / sensitivity tags |
 
 Relationship names accepted: `باپ`, `ماں`, `بیٹا`, `بیٹی`, `بہن`, `چچا`, `ماموں`, `دادا`, `نانا`, `والد`.
 
@@ -189,7 +190,7 @@ Relationship names accepted: `باپ`, `ماں`, `بیٹا`, `بیٹی`, `بہن
 تپکا صارف
 # ⚠  صارف تپکا — 4 اولاد دو نمبری ہوئی
 
-بول رپورٹ
+پھوٹ رپورٹ
 # رپورٹ: (ہائیڈ) [دو نمبری] [جانی] — اجداد میں کوئی تپکا ہو چکا
 ```
 

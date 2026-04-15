@@ -81,10 +81,10 @@ KEYWORDS = {
     "رساؤ":    "Q_LEAK",
     "تپکا":   "REVOKE",
     "حساس":   "SENSITIVITY",
-    "بول":    "PRINT",
-    "سچ":     "TRUE",
-    "جھوٹ":   "FALSE",
-    "خالی":   "NULL",
+    "پھوٹ":   "PRINT",
+    "جنین":   "TRUE",
+    "کدو":    "FALSE",
+    "نلا":    "NULL",
 }
 
 URDU_DIGITS = {c: str(i) for i, c in enumerate("۰۱۲۳۴۵۶۷۸۹")}
@@ -360,9 +360,9 @@ def paint(s, key):
 
 
 def _show(v):
-    if v is None: return "خالی"
-    if v is True: return "سچ"
-    if v is False: return "جھوٹ"
+    if v is None: return "نلا"
+    if v is True: return "جنین"
+    if v is False: return "کدو"
     if isinstance(v, float) and v.is_integer(): return str(int(v))
     return str(v)
 

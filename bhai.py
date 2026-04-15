@@ -22,22 +22,22 @@ class BhaiError(Exception):
 
 KEYWORDS = {
     "سن":     "VAR",       # listen up — variable declaration
-    "بول":    "PRINT",     # speak
+    "پھوٹ":   "PRINT",     # burst out / speak
     "اگر":    "IF",
     "ورنہ":   "ELSE",
     "جبتک":   "WHILE",
     "ہرایک":  "FOREACH",
     "میں":    "IN",
     "کام":    "FUNC",      # work/job — function
-    "واپس":   "RETURN",
-    "سچ":     "TRUE",
-    "جھوٹ":   "FALSE",
-    "خالی":   "NULL",
+    "کلٹی":   "RETURN",    # flip back
+    "جنین":   "TRUE",      # genuine / real
+    "کدو":    "FALSE",     # pumpkin / dud
+    "نلا":    "NULL",
     "اور":    "AND",
     "یا":     "OR",
-    "نہیں":   "NOT",
-    "توڑ":    "BREAK",
-    "اگلا":   "CONTINUE",
+    "نا":     "NOT",
+    "شاٹ":    "BREAK",     # short-circuit
+    "کٹا":    "CONTINUE",  # cut / skip
     "پوچھ":   "INPUT",
 }
 
@@ -526,7 +526,7 @@ class Interpreter:
         g.set("قسم",    Builtin("قسم",    _b_type))
         g.set("نمبر",   Builtin("نمبر",   _b_num))
         g.set("لفظ",    Builtin("لفظ",    _b_str))
-        g.set("شامل",   Builtin("شامل",   _b_push))   # append
+        g.set("ڈال",    Builtin("ڈال",    _b_push))   # push
         g.set("نکال",   Builtin("نکال",   _b_pop))    # pop
         g.set("ترتیب",  Builtin("ترتیب",  _b_range))  # range
 
@@ -712,9 +712,9 @@ def _truthy(v):
 
 
 def _stringify(v):
-    if v is None: return "خالی"
-    if v is True: return "سچ"
-    if v is False: return "جھوٹ"
+    if v is None: return "نلا"
+    if v is True: return "جنین"
+    if v is False: return "کدو"
     if isinstance(v, float) and v.is_integer(): return str(int(v))
     if isinstance(v, list): return "[" + ", ".join(_stringify(x) for x in v) + "]"
     return str(v)
@@ -763,7 +763,7 @@ def _b_str(args, line):
 
 def _b_push(args, line):
     if len(args) != 2 or not isinstance(args[0], list):
-        raise BhaiError("شامل(فہرست, چیز) چاہیے", line)
+        raise BhaiError("ڈال(فہرست, چیز) چاہیے", line)
     args[0].append(args[1])
     return args[0]
 
