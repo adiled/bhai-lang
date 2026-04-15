@@ -2,6 +2,7 @@
 # بھائی — کراچی کی سب سے بدتمیز پروگرامنگ زبان
 # v0.1 — tree-walking interpreter. Next: bytecode VM, then Rust port.
 
+import os
 import sys
 from dataclasses import dataclass
 from typing import Any
@@ -39,6 +40,7 @@ KEYWORDS = {
     "شاٹ":    "BREAK",     # short-circuit
     "کٹا":    "CONTINUE",  # cut / skip
     "پوچھ":   "INPUT",
+    "منگوا":  "IMPORT",
 }
 
 URDU_DIGITS = {c: str(i) for i, c in enumerate("۰۱۲۳۴۵۶۷۸۹")}
@@ -212,6 +214,8 @@ class Index: obj: Any; idx: Any; line: int
 class ListLit: items: list; line: int
 @dataclass
 class InputExpr: prompt: Any; line: int
+@dataclass
+class ImportStmt: path: str; line: int
 
 
 # ═══════════════════════════ PARSER ═══════════════════════════
@@ -254,6 +258,11 @@ class Parser:
         if t.kind == "FOREACH":  return self._foreach_stmt()
         if t.kind == "FUNC":     return self._func_decl()
         if t.kind == "RETURN":   return self._return_stmt()
+        if t.kind == "IMPORT":
+            self._advance()
+            path = self._expect("STRING", "فائل کا نام چاہیے").value
+            self._match("SEMI")
+            return ImportStmt(path, t.line)
         if t.kind == "BREAK":
             self._advance(); self._match("SEMI")
             return BreakStmt(t.line)
@@ -518,6 +527,8 @@ class Builtin:
 class Interpreter:
     def __init__(self):
         self.globals = Environment()
+        self.imported = set()
+        self.current_dir = os.getcwd()
         self._install_builtins()
 
     def _install_builtins(self):
@@ -605,6 +616,24 @@ class Interpreter:
 
     def _exec_BreakStmt(self, n, env): raise BreakSignal()
     def _exec_ContinueStmt(self, n, env): raise ContinueSignal()
+
+    def _exec_ImportStmt(self, n, env):
+        path = os.path.abspath(os.path.join(self.current_dir, n.path))
+        if path in self.imported: return
+        if not os.path.exists(path):
+            raise BhaiError(f"فائل نہیں ملی: {n.path}", n.line)
+        self.imported.add(path)
+        with open(path, encoding="utf-8") as f:
+            src = f.read()
+        old_dir = self.current_dir
+        self.current_dir = os.path.dirname(path)
+        try:
+            tokens = Lexer(src).tokenize()
+            program = Parser(tokens).parse()
+            for stmt in program.stmts:
+                self._exec(stmt, env)
+        finally:
+            self.current_dir = old_dir
 
     def _exec_Block(self, n, env):
         block_env = Environment(env)
@@ -796,10 +825,13 @@ def run_source(src, interp=None):
 def run_file(path):
     with open(path, "r", encoding="utf-8") as f:
         src = f.read()
+    interp = Interpreter()
+    interp.current_dir = os.path.dirname(os.path.abspath(path))
+    interp.imported.add(os.path.abspath(path))
     try:
-        run_source(src)
+        run_source(src, interp)
     except BhaiError as e:
-        print(f"بکواس! {e}", file=sys.stderr)
+        print(f"بکواس! [{path}:{e.line or '?'}] {e.msg}", file=sys.stderr)
         sys.exit(1)
 
 

@@ -1,0 +1,10 @@
+# Multi-file program — منگوا brings in the PII library.
+# Lineage and tags from imported کردار survive intact.
+
+منگوا "lib_pii.bhai"
+
+کردار عمر = 25
+کردار ماڈل_ان_پٹ = سی_این_آئی_سی + عمر    # حساس flows in from lib
+
+پھوٹ ماڈل_ان_پٹ
+رساؤ ماڈل_ان_پٹ

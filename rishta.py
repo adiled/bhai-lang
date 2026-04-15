@@ -4,6 +4,7 @@
 # revoke verb: تپکا
 # trust: جانی > بھائی > (default), propagates max along lineage
 
+import os
 import sys
 import json
 import datetime
@@ -91,6 +92,7 @@ KEYWORDS = {
     "بنا":        "BANA",
     "سنبھال":     "SAVE",
     "اٹھا":       "LOAD",
+    "منگوا":      "IMPORT",
     "پھوٹ":   "PRINT",
     "جنین":   "TRUE",
     "کدو":    "FALSE",
@@ -241,6 +243,8 @@ class SaveStmt:       path: str; line: int
 @dataclass
 class LoadStmt:       path: str; line: int
 @dataclass
+class ImportStmt:     path: str; line: int
+@dataclass
 class PrintStmt:      expr: Any; line: int
 @dataclass
 class Binary:         op: str; left: Any; right: Any; line: int
@@ -288,6 +292,7 @@ class Parser:
         if t.kind == "JORH":       return self._jorh()
         if t.kind == "SAVE":       return self._save_load(SaveStmt)
         if t.kind == "LOAD":       return self._save_load(LoadStmt)
+        if t.kind == "IMPORT":     return self._save_load(ImportStmt)
         if t.kind == "PRINT":      return self._print()
         raise BhaiError(f"یہ '{t.value}' یہاں کیا کر رہا ہے؟", t.line)
 
@@ -450,6 +455,8 @@ def _tags(k):
 class Interpreter:
     def __init__(self):
         self.globals: dict = {}
+        self.imported: set = set()
+        self.current_dir: str = os.getcwd()
 
     def run(self, prog):
         for s in prog.stmts:
@@ -598,6 +605,26 @@ class Interpreter:
             f"✓ سنبھال لیا → {n.path} ({len(reachable)} کردار, {len(self.globals)} global)",
             "bold",
         ))
+
+    def _x_ImportStmt(self, n):
+        path = os.path.abspath(os.path.join(self.current_dir, n.path))
+        if path in self.imported:
+            return
+        if not os.path.exists(path):
+            raise BhaiError(f"فائل نہیں ملی: {n.path}", n.line)
+        self.imported.add(path)
+        with open(path, encoding="utf-8") as f:
+            src = f.read()
+        old_dir = self.current_dir
+        self.current_dir = os.path.dirname(path)
+        try:
+            toks = Lexer(src).tokenize()
+            prog = Parser(toks).parse()
+            for stmt in prog.stmts:
+                self._exec(stmt)
+        finally:
+            self.current_dir = old_dir
+        print(paint(f"✓ منگوا: {n.path}", "bold"))
 
     def _x_LoadStmt(self, n):
         global _counter
@@ -791,12 +818,15 @@ class Interpreter:
 def run_file(path):
     with open(path, encoding="utf-8") as f:
         src = f.read()
+    interp = Interpreter()
+    interp.current_dir = os.path.dirname(os.path.abspath(path))
+    interp.imported.add(os.path.abspath(path))
     try:
         toks = Lexer(src).tokenize()
         prog = Parser(toks).parse()
-        Interpreter().run(prog)
+        interp.run(prog)
     except BhaiError as e:
-        print(f"بکواس! {e}", file=sys.stderr)
+        print(f"بکواس! [{path}:{e.line or '?'}] {e.msg}", file=sys.stderr)
         sys.exit(1)
 
 

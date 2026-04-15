@@ -1,0 +1,6 @@
+# lib_pii.bhai — reusable PII کردار library
+# Anyone who منگوا'd this file inherits these حساس kirdaars.
+
+کردار سی_این_آئی_سی = 4210112345678 حساس جانی
+کردار ای_میل = "ali@karachi.pk" حساس جانی
+کردار فون = 03001234567 حساس

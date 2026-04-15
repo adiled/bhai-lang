@@ -178,6 +178,16 @@ Every binary operation creates a new کردار whose parents are the operands. 
 | `رشتہ <a> سے <b>` | query the rishta path between two کردار |
 | `پھوٹ <expr>` | print with consent / trust / sensitivity tags |
 
+### Modules (v0.5)
+
+```
+منگوا "<path/to/file.bhai>"
+```
+
+Imports another `.bhai` file into the current namespace. Path is resolved relative to the importing file. Cycles are skipped (each absolute path is loaded at most once). Imported کردار keep their consent / trust / sensitivity / lineage intact — they're indistinguishable from locally-declared ones.
+
+Works in both `bhai.py` and `rishta.py`. See [`examples/rishta_modules.bhai`](examples/rishta_modules.bhai).
+
 ### Persistence (v0.4)
 
 The lineage graph survives across runs — yesterday's audit reloads byte-for-byte today.
@@ -255,9 +265,12 @@ In بھائی these are runtime-intrinsic: the answer to every question is alrea
 
 - **v0.3** ✓ — typed rishta edges: `استاد` (training), `سوتن` (fallback), `گواہ` (audit snapshot), `جوڑ` (JOIN)
 - **v0.4** ✓ — serialized `شجرہ` (`سنبھال` / `اٹھا`): save and load the lineage graph across runs
-- **v0.5** — more typed edges: `دشمن` (adversarial), `سمدھی` (cross-table joins), `بھتیجا/بھانجا` (paternal/maternal sibling pipelines), `لے_پالک` (external import), `رضاعی` (cached/mirrored)
-- **v0.6** — `سیٹ` (freeze), `سافٹویئر_اپڈیٹ` (versioned mutation), `ڈنڈی_ماری` (tamper marks), `اوقات_دکھا` (assertions)
-- **v0.7** — compile-to-Python: embed the رشتہ runtime in existing Python codebases
+- **v0.5** ✓ — modules (`منگوا`): multi-file programs with cycle detection
+- **v0.6** — REPL for `rishta.py`, polish (literal-print special-case, source-context errors)
+- **v0.7** — more typed edges: `دشمن`, `بھتیجا/بھانجا`, `لے_پالک`, `رضاعی`, `سمدھی` first-class
+- **v0.8** — stdlib: `فائل` (file IO), `وقت` (time), `حساب` (math), `جال` (regex)
+- **v0.9** — `سیٹ` (freeze), `سافٹویئر_اپڈیٹ` (versioned mutation), `ڈنڈی_ماری` (tamper marks), `اوقات_دکھا` (assertions)
+- **v0.10** — compile-to-Python: embed the رشتہ runtime in existing Python codebases
 - **v1.0** — bytecode VM
 - **v2.0** — Rust runtime + LLVM backend
 
