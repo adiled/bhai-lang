@@ -1,0 +1,19 @@
+# رشتہ v0.4 — persist the شجرہ to disk
+# An audit kit: today's lineage saved for tomorrow's compliance check.
+
+کردار صارف = "ali@karachi.pk" حساس جانی
+کردار ملک = "پاکستان" بھائی
+کردار پروفائل = صارف + " (" + ملک + ")"
+کردار رپورٹ = پروفائل + " — اپریل 2026"
+
+# ML training lineage
+کردار ٹریننگ = 10000 حساس
+کردار ماڈل = ٹریننگ * 2
+استاد ماڈل = ٹریننگ
+
+# JOIN
+کردار آرڈرز = 50
+جوڑ صارف سے آرڈرز بنا فل_ٹیبل
+
+پھوٹ "graph built — saving snapshot..."
+سنبھال "audit.json"

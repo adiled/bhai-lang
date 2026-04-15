@@ -5,6 +5,8 @@
 # trust: جانی > بھائی > (default), propagates max along lineage
 
 import sys
+import json
+import datetime
 import itertools
 from dataclasses import dataclass
 from typing import Any, List, Tuple, Optional
@@ -87,6 +89,8 @@ KEYWORDS = {
     "گواہ":       "GAWAH",
     "جوڑ":        "JORH",
     "بنا":        "BANA",
+    "سنبھال":     "SAVE",
+    "اٹھا":       "LOAD",
     "پھوٹ":   "PRINT",
     "جنین":   "TRUE",
     "کدو":    "FALSE",
@@ -233,6 +237,10 @@ class GawahDecl:      name: str; source: str; line: int
 @dataclass
 class JorhStmt:       a: str; b: str; result: str; line: int
 @dataclass
+class SaveStmt:       path: str; line: int
+@dataclass
+class LoadStmt:       path: str; line: int
+@dataclass
 class PrintStmt:      expr: Any; line: int
 @dataclass
 class Binary:         op: str; left: Any; right: Any; line: int
@@ -278,6 +286,8 @@ class Parser:
         if t.kind == "USTAAD":     return self._typed_decl(UstaadDecl)
         if t.kind == "GAWAH":      return self._gawah()
         if t.kind == "JORH":       return self._jorh()
+        if t.kind == "SAVE":       return self._save_load(SaveStmt)
+        if t.kind == "LOAD":       return self._save_load(LoadStmt)
         if t.kind == "PRINT":      return self._print()
         raise BhaiError(f"یہ '{t.value}' یہاں کیا کر رہا ہے؟", t.line)
 
@@ -341,6 +351,12 @@ class Parser:
         source = self._expect("IDENT", "کس پہ گواہی؟").value
         self._match("SEMI")
         return GawahDecl(name, source, t.line)
+
+    def _save_load(self, cls):
+        t = self._adv()
+        path = self._expect("STRING", "فائل کا نام چاہیے").value
+        self._match("SEMI")
+        return cls(path, t.line)
 
     def _jorh(self):
         # syntax: جوڑ <a> سے <b> بنا <result>
@@ -548,6 +564,77 @@ class Interpreter:
             joined.consent = "دو نمبری"
         self.globals[n.result] = joined
         print(paint(f"✓ جوڑ: {n.a} ⨝ {n.b} → {n.result} (سمدھی between {n.a} ↔ {n.b})", "bold"))
+
+    def _x_SaveStmt(self, n):
+        # collect every kirdaar reachable from any global (parents + children both directions)
+        reachable = {}
+        def visit(k):
+            if k.id in reachable: return
+            reachable[k.id] = k
+            for _, p in k.parents: visit(p)
+            for _, c in k.children: visit(c)
+        for k in self.globals.values():
+            visit(k)
+        data = {
+            "version": "0.4",
+            "saved_at": datetime.datetime.now().isoformat(),
+            "kirdaars": [
+                {
+                    "id": k.id,
+                    "name": k.name,
+                    "value": k.value,
+                    "consent": k.consent,
+                    "trust": k.trust,
+                    "sensitivity": k.sensitivity,
+                    "parents": [{"rel": rel, "id": p.id} for rel, p in k.parents],
+                }
+                for k in reachable.values()
+            ],
+            "globals": {name: k.id for name, k in self.globals.items()},
+        }
+        with open(n.path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(paint(
+            f"✓ سنبھال لیا → {n.path} ({len(reachable)} کردار, {len(self.globals)} global)",
+            "bold",
+        ))
+
+    def _x_LoadStmt(self, n):
+        global _counter
+        with open(n.path, encoding="utf-8") as f:
+            data = json.load(f)
+        if data.get("version") != "0.4":
+            print(paint(f"⚠  پرانا فارمیٹ — version {data.get('version')}, expected 0.4", "شاپنگ"))
+        # phase 1: build kirdaars without edges
+        by_id = {}
+        for kd in data["kirdaars"]:
+            k = object.__new__(Kirdaar)
+            k.id = kd["id"]
+            k.name = kd["name"]
+            k.value = kd["value"]
+            k.consent = kd["consent"]
+            k.trust = kd["trust"]
+            k.sensitivity = kd["sensitivity"]
+            k.parents = []
+            k.children = []
+            k.line = None
+            by_id[k.id] = k
+        # phase 2: link edges
+        for kd in data["kirdaars"]:
+            child = by_id[kd["id"]]
+            for edge in kd["parents"]:
+                parent = by_id[edge["id"]]
+                child.parents.append((edge["rel"], parent))
+                parent.children.append((edge["rel"], child))
+        # phase 3: restore globals + advance counter
+        self.globals = {name: by_id[kid] for name, kid in data["globals"].items()}
+        if by_id:
+            _counter = itertools.count(max(by_id.keys()) + 1)
+        saved_at = data.get("saved_at", "?")
+        print(paint(
+            f"✓ اٹھا لیا ← {n.path} ({len(by_id)} کردار, {len(self.globals)} global) — saved {saved_at}",
+            "bold",
+        ))
 
     def _x_QueryUstaadChain(self, n):
         k = self._lookup(n.name, n.line)

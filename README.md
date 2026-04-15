@@ -178,6 +178,17 @@ Every binary operation creates a new کردار whose parents are the operands. 
 | `رشتہ <a> سے <b>` | query the rishta path between two کردار |
 | `پھوٹ <expr>` | print with consent / trust / sensitivity tags |
 
+### Persistence (v0.4)
+
+The lineage graph survives across runs — yesterday's audit reloads byte-for-byte today.
+
+| Statement | Effect |
+|---|---|
+| `سنبھال "<file.json>"` | save the entire reachable شجرہ — every کردار, every edge, every consent / trust / sensitivity tag, plus a timestamp |
+| `اٹھا "<file.json>"` | load a previously-saved شجرہ; counter advances past loaded ids so new کردار don't collide |
+
+The file is plain JSON — auditors can inspect it without بھائی installed. See [`examples/rishta_save.bhai`](examples/rishta_save.bhai) and [`examples/rishta_load.bhai`](examples/rishta_load.bhai) for the round-trip demo.
+
 ### Typed-edge primitives (v0.3)
 
 These use Karachi kinship vocabulary to encode relationships that conventional lineage tools have no word for:
@@ -243,7 +254,7 @@ In بھائی these are runtime-intrinsic: the answer to every question is alrea
 ## Roadmap
 
 - **v0.3** ✓ — typed rishta edges: `استاد` (training), `سوتن` (fallback), `گواہ` (audit snapshot), `جوڑ` (JOIN)
-- **v0.4** — serialized `شجرہ`: save/load lineage across runs — the compliance audit kit
+- **v0.4** ✓ — serialized `شجرہ` (`سنبھال` / `اٹھا`): save and load the lineage graph across runs
 - **v0.5** — more typed edges: `دشمن` (adversarial), `سمدھی` (cross-table joins), `بھتیجا/بھانجا` (paternal/maternal sibling pipelines), `لے_پالک` (external import), `رضاعی` (cached/mirrored)
 - **v0.6** — `سیٹ` (freeze), `سافٹویئر_اپڈیٹ` (versioned mutation), `ڈنڈی_ماری` (tamper marks), `اوقات_دکھا` (assertions)
 - **v0.7** — compile-to-Python: embed the رشتہ runtime in existing Python codebases

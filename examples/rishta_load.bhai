@@ -1,0 +1,13 @@
+# Reload yesterday's audit + run compliance queries against it.
+# Run AFTER rishta_save.bhai (audit.json must exist).
+
+اٹھا "audit.json"
+
+پھوٹ "--- restored graph ---"
+شجرہ رپورٹ
+رساؤ ماڈل
+استاد_چین ماڈل
+
+پھوٹ "--- now testing GDPR cascade against restored data ---"
+تپکا صارف
+شجرہ رپورٹ
