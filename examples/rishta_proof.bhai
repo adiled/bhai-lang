@@ -1,0 +1,19 @@
+# رشتہ v0.9 — گواہی (cryptographic testimony)
+# Every کردار's lineage is hashed (SHA-256) over its content + tags + parent
+# proofs. Saving emits the hashes; loading verifies them. Tampering = abort.
+
+کردار صارف = "ali@karachi.pk" حساس جانی
+کردار پروفائل = صارف + " (کراچی)"
+کردار رپورٹ = پروفائل + " — اپریل ۲۰۲۶"
+
+# every کردار has a deterministic, content-addressable proof
+ثبوت صارف
+ثبوت پروفائل
+ثبوت رپورٹ
+
+سنبھال "/tmp/proof_demo.json"
+پھوٹ "—"
+اٹھا "/tmp/proof_demo.json"
+
+# same hash after round-trip — proves nothing was lost or altered
+ثبوت رپورٹ

@@ -7,6 +7,7 @@
 import os
 import sys
 import json
+import hashlib
 import datetime
 import itertools
 from dataclasses import dataclass
@@ -100,6 +101,7 @@ KEYWORDS = {
     "رضاعی":      "RAZAI",
     "سمدھی":      "Q_SAMDHI",
     "دشمن_رساؤ":  "Q_DUSHMAN_LEAK",
+    "ثبوت":       "Q_SUBOOT",
     "پھوٹ":   "PRINT",
     "جنین":   "TRUE",
     "کدو":    "FALSE",
@@ -262,6 +264,8 @@ class QuerySamdhi:    name: str; line: int
 @dataclass
 class QueryDushmanLeak: name: str; line: int
 @dataclass
+class QuerySaboot:    name: str; line: int
+@dataclass
 class PrintStmt:      expr: Any; line: int
 @dataclass
 class Binary:         op: str; left: Any; right: Any; line: int
@@ -313,6 +317,7 @@ class Parser:
         if t.kind == "DUSHMAN":    return self._simple_q(DushmanMark, "کسے دشمن مارنا ہے؟")
         if t.kind == "Q_DUSHMAN_LEAK": return self._simple_q(QueryDushmanLeak, "کس کا دشمن رساؤ؟")
         if t.kind == "Q_SAMDHI":   return self._simple_q(QuerySamdhi, "کس کے سمدھی؟")
+        if t.kind == "Q_SUBOOT":   return self._simple_q(QuerySaboot, "کس کا ثبوت؟")
         if t.kind == "LEPALAK":    return self._lepalak()
         if t.kind == "RAZAI":      return self._typed_decl(RazaiDecl)
         if t.kind == "PRINT":      return self._print()
@@ -462,6 +467,31 @@ ANSI = {
 def paint(s, key):
     if not sys.stdout.isatty(): return s
     return f"{ANSI.get(key, '')}{s}{ANSI['reset']}"
+
+
+def _hash_kirdaar(k, cache):
+    """Deterministic SHA-256 over (value + tags + sorted parent rishta-edges).
+    Excludes the kirdaar's name — same content + lineage = same hash."""
+    if k.id in cache:
+        return cache[k.id]
+    parent_proofs = sorted(
+        (rel, _hash_kirdaar(p, cache)) for rel, p in k.parents
+    )
+    canonical = json.dumps(
+        {
+            "v": k.value,
+            "c": k.consent,
+            "t": k.trust,
+            "s": k.sensitivity,
+            "d": k.dushman,
+            "o": k.origin,
+            "p": parent_proofs,
+        },
+        sort_keys=True, ensure_ascii=False, default=str,
+    )
+    h = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    cache[k.id] = h
+    return h
 
 
 def _show(v):
@@ -620,8 +650,12 @@ class Interpreter:
             for _, c in k.children: visit(c)
         for k in self.globals.values():
             visit(k)
+        # compute hashes for every reachable kirdaar (cached)
+        hash_cache = {}
+        for k in reachable.values():
+            _hash_kirdaar(k, hash_cache)
         data = {
-            "version": "0.7",
+            "version": "0.9",
             "saved_at": datetime.datetime.now().isoformat(),
             "kirdaars": [
                 {
@@ -634,6 +668,7 @@ class Interpreter:
                     "dushman": k.dushman,
                     "origin": k.origin,
                     "parents": [{"rel": rel, "id": p.id} for rel, p in k.parents],
+                    "گواہی": hash_cache[k.id],
                 }
                 for k in reachable.values()
             ],
@@ -670,7 +705,7 @@ class Interpreter:
         global _counter
         with open(n.path, encoding="utf-8") as f:
             data = json.load(f)
-        if data.get("version") not in ("0.4", "0.7"):
+        if data.get("version") not in ("0.4", "0.7", "0.9"):
             print(paint(f"⚠  پرانا فارمیٹ — version {data.get('version')}", "شاپنگ"))
         # phase 1: build kirdaars without edges
         by_id = {}
@@ -695,13 +730,30 @@ class Interpreter:
                 parent = by_id[edge["id"]]
                 child.parents.append((edge["rel"], parent))
                 parent.children.append((edge["rel"], child))
-        # phase 3: restore globals + advance counter
+        # phase 3: verify گواہی (cryptographic testimony) for every kirdaar
+        verified = 0
+        if data.get("version") == "0.9":
+            cache = {}
+            for kd in data["kirdaars"]:
+                if "گواہی" not in kd:
+                    continue
+                k = by_id[kd["id"]]
+                expected = _hash_kirdaar(k, cache)
+                if expected != kd["گواہی"]:
+                    raise BhaiError(
+                        f"⚠  گواہی نا کام: '{kd['name']}' میں چھیڑ چھاڑ ہوئی! "
+                        f"expected {expected[:12]}…, file says {kd['گواہی'][:12]}…",
+                        None,
+                    )
+                verified += 1
+        # phase 4: restore globals + advance counter
         self.globals = {name: by_id[kid] for name, kid in data["globals"].items()}
         if by_id:
             _counter = itertools.count(max(by_id.keys()) + 1)
         saved_at = data.get("saved_at", "?")
+        proof_msg = f", {verified} گواہی verified ✓" if verified else ""
         print(paint(
-            f"✓ اٹھا لیا ← {n.path} ({len(by_id)} کردار, {len(self.globals)} global) — saved {saved_at}",
+            f"✓ اٹھا لیا ← {n.path} ({len(by_id)} کردار, {len(self.globals)} global{proof_msg}) — saved {saved_at}",
             "bold",
         ))
 
@@ -757,6 +809,11 @@ class Interpreter:
         print(paint(f"{n.name} کے سمدھی:", "bold"))
         for via, other in results:
             print(f"  ↔ {other.name} = {_show_safe(other)} {_tags(other)} (via {via.name})")
+
+    def _x_QuerySaboot(self, n):
+        k = self._lookup(n.name, n.line)
+        h = _hash_kirdaar(k, {})
+        print(paint(f"ثبوت {n.name}: {h[:16]}…  (full SHA-256: {h})", "bold"))
 
     def _x_QueryDushmanLeak(self, n):
         k = self._lookup(n.name, n.line)

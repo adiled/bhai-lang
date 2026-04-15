@@ -1,8 +1,8 @@
 # بھائی-lang
 
-**A Karachi-native programming language with data lineage as a first-class primitive.**
+**A Karachi-native programming language with cryptographically verifiable data lineage as a first-class primitive.**
 
-Data privacy (GDPR / CPRA), ML feature provenance, and AI agent auditability are problems conventional languages punt to libraries. بھائی makes them intrinsic: every value carries its ancestry, consent revocation cascades automatically through every derived computation, and PII leaks are detectable with a single query.
+Data privacy (GDPR / CPRA), ML feature provenance, and AI agent auditability are problems conventional languages punt to libraries. بھائی makes them intrinsic: every value carries its ancestry, consent revocation cascades automatically through every derived computation, PII leaks are detectable with a single query, and every lineage claim is **cryptographically signed** — auditable without trusting the vendor.
 
 The language is written in Urdu script because its semantics map to Karachi idioms about relationships (`رشتہ`), loss (`تپکا`, `شاپنگ`), and authenticity (`VIP`, `دو نمبری`).
 
@@ -222,6 +222,18 @@ Imports another `.bhai` file into the current namespace. Path is resolved relati
 
 Works in both `bhai.py` and `rishta.py`. See [`examples/rishta_modules.bhai`](examples/rishta_modules.bhai).
 
+### Cryptographic testimony (v0.9)
+
+Every کردار has a **content-addressable proof** — a SHA-256 hash computed deterministically from its value, tags, and the sorted hashes of its parents (a Merkle chain over the شجرہ).
+
+| Statement | Effect |
+|---|---|
+| `ثبوت <name>` | print the SHA-256 hash of `<name>`'s lineage |
+| `سنبھال "..."` | now also writes a `گواہی` field per کردار |
+| `اٹھا "..."` | now **verifies** every `گواہی` on load — any mismatch aborts with which کردار was tampered |
+
+Why this matters: lineage is no longer "the vendor claims X" — it's mathematically demonstrable. Hand someone the JSON file; they can verify, *without trusting you*, that the lineage really happened. Tamper a single value and every descendant's proof fails. See [`examples/rishta_proof.bhai`](examples/rishta_proof.bhai).
+
 ### Persistence (v0.4)
 
 The lineage graph survives across runs — yesterday's audit reloads byte-for-byte today.
@@ -314,6 +326,7 @@ In بھائی these are runtime-intrinsic: the answer to every question is alrea
 - **v0.5** ✓ — modules (`منگوا`): multi-file programs with cycle detection
 - **v0.7** ✓ — typed edges: `دشمن` (adversarial), `لے_پالک` (external import), `رضاعی` (cached/mirrored), `سمدھی` query, `دشمن_رساؤ` query
 - **v0.8** ✓ — stdlib for `bhai.py`: فائل (file IO), وقت (time), حساب (math), جال (regex) — 19 builtins
+- **v0.9** ✓ — `گواہی` (cryptographic testimony): SHA-256 Merkle chain over the شجرہ; load verifies, tamper aborts. `ثبوت <name>` query.
 - **v0.6** (deferred) — REPL for `rishta.py`, polish (literal-print, source-context errors)
 - **v0.9** — `سیٹ` (freeze), `سافٹویئر_اپڈیٹ` (versioned mutation), `ڈنڈی_ماری` (tamper marks), `اوقات_دکھا` (assertions)
 - **v0.10** — compile-to-Python: embed the رشتہ runtime in existing Python codebases
