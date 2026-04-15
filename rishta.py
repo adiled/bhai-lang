@@ -75,12 +75,18 @@ KEYWORDS = {
     "جانی":   "TRUST_JANI",
     "بہن":    "REL", "چچا": "REL", "ماموں": "REL",
     "دادا":   "REL", "نانا": "REL", "والد": "REL",
-    "اولاد":   "Q_AULAD",
-    "جد":     "Q_JAD",
-    "شجرہ":   "Q_SHAJARA",
-    "رساؤ":    "Q_LEAK",
-    "تپکا":   "REVOKE",
-    "حساس":   "SENSITIVITY",
+    "اولاد":      "Q_AULAD",
+    "جد":         "Q_JAD",
+    "شجرہ":       "Q_SHAJARA",
+    "رساؤ":        "Q_LEAK",
+    "استاد_چین":  "Q_USTAAD_CHAIN",
+    "تپکا":       "REVOKE",
+    "حساس":       "SENSITIVITY",
+    "سوتن":       "SAUTAN",
+    "استاد":      "USTAAD",
+    "گواہ":       "GAWAH",
+    "جوڑ":        "JORH",
+    "بنا":        "BANA",
     "پھوٹ":   "PRINT",
     "جنین":   "TRUE",
     "کدو":    "FALSE",
@@ -217,6 +223,16 @@ class QueryJad:       name: str; line: int
 @dataclass
 class QueryLeak:      name: str; line: int
 @dataclass
+class QueryUstaadChain: name: str; line: int
+@dataclass
+class SautanDecl:     child: str; parent: str; line: int
+@dataclass
+class UstaadDecl:     child: str; parent: str; line: int
+@dataclass
+class GawahDecl:      name: str; source: str; line: int
+@dataclass
+class JorhStmt:       a: str; b: str; result: str; line: int
+@dataclass
 class PrintStmt:      expr: Any; line: int
 @dataclass
 class Binary:         op: str; left: Any; right: Any; line: int
@@ -257,6 +273,11 @@ class Parser:
         if t.kind == "Q_AULAD":    return self._simple_q(QueryAulad,   "کس کی اولاد؟")
         if t.kind == "Q_JAD":      return self._simple_q(QueryJad,     "کس کے جد؟")
         if t.kind == "Q_LEAK":     return self._simple_q(QueryLeak,    "کس کا رساؤ؟")
+        if t.kind == "Q_USTAAD_CHAIN": return self._simple_q(QueryUstaadChain, "کس کی استاد چین؟")
+        if t.kind == "SAUTAN":     return self._typed_decl(SautanDecl)
+        if t.kind == "USTAAD":     return self._typed_decl(UstaadDecl)
+        if t.kind == "GAWAH":      return self._gawah()
+        if t.kind == "JORH":       return self._jorh()
         if t.kind == "PRINT":      return self._print()
         raise BhaiError(f"یہ '{t.value}' یہاں کیا کر رہا ہے؟", t.line)
 
@@ -302,6 +323,35 @@ class Parser:
         name = self._expect("IDENT", msg).value
         self._match("SEMI")
         return cls(name, t.line)
+
+    def _typed_decl(self, cls):
+        # syntax: <kwd> <child> = <parent>
+        t = self._adv()
+        child = self._expect("IDENT", "کردار کا نام").value
+        self._expect("ASSIGN", "= چاہیے")
+        parent = self._expect("IDENT", "کردار کا نام").value
+        self._match("SEMI")
+        return cls(child, parent, t.line)
+
+    def _gawah(self):
+        # syntax: گواہ <name> = <source>
+        t = self._adv()
+        name = self._expect("IDENT", "گواہ کا نام").value
+        self._expect("ASSIGN", "= چاہیے")
+        source = self._expect("IDENT", "کس پہ گواہی؟").value
+        self._match("SEMI")
+        return GawahDecl(name, source, t.line)
+
+    def _jorh(self):
+        # syntax: جوڑ <a> سے <b> بنا <result>
+        t = self._adv()
+        a = self._expect("IDENT", "پہلا کردار").value
+        self._expect("SE", "'سے' چاہیے")
+        b = self._expect("IDENT", "دوسرا کردار").value
+        self._expect("BANA", "'بنا' چاہیے")
+        result = self._expect("IDENT", "نتیجہ کا نام").value
+        self._match("SEMI")
+        return JorhStmt(a, b, result, t.line)
 
     def _print(self):
         t = self._adv()
@@ -450,6 +500,72 @@ class Interpreter:
             print(f"{n.name} یتیم ہے — کوئی جد نہیں"); return
         print(paint(f"{n.name} کے جد:", "bold"))
         for rel, a in ancs:
+            print(f"  ← {rel}: {a.name} = {_show_safe(a)} {_tags(a)}")
+
+    def _x_SautanDecl(self, n):
+        child = self._lookup(n.child, n.line)
+        parent = self._lookup(n.parent, n.line)
+        child.link("سوتن", parent)
+        # سوتن inherits sensitivity to child (alternative source could carry PII too)
+        if parent.sensitivity:
+            child.sensitivity = "حساس"
+        print(paint(f"✓ {n.child} کی سوتن: {n.parent}", "bold"))
+
+    def _x_UstaadDecl(self, n):
+        # Y is استاد of X (Y trained X). X is implicitly شاگرد.
+        shagird = self._lookup(n.child, n.line)
+        ustaad = self._lookup(n.parent, n.line)
+        shagird.link("استاد", ustaad)
+        # training data sensitivity flows to the model
+        if ustaad.sensitivity:
+            shagird.sensitivity = "حساس"
+        print(paint(f"✓ {n.parent} → استاد of {n.child}", "bold"))
+
+    def _x_GawahDecl(self, n):
+        src = self._lookup(n.source, n.line)
+        # snapshot src's value at this moment; obs is a new kirdaar
+        obs = Kirdaar(src.value, name=n.name, line=n.line)
+        obs.link("گواہ", src)
+        # witness inherits trust + sensitivity (it sees the same data)
+        obs.trust = src.trust
+        obs.sensitivity = src.sensitivity
+        self.globals[n.name] = obs
+        print(paint(f"✓ گواہ {n.name} → {n.source} پہ snapshot لیا", "bold"))
+
+    def _x_JorhStmt(self, n):
+        a = self._lookup(n.a, n.line)
+        b = self._lookup(n.b, n.line)
+        # joined value carries both sources' values
+        joined = Kirdaar([a.value, b.value], name=n.result, line=n.line)
+        joined.link("بیوی", a)
+        joined.link("شوہر", b)
+        # propagate trust + sensitivity from both sources
+        joined.trust = max_trust(a.trust, b.trust)
+        if a.sensitivity or b.sensitivity:
+            joined.sensitivity = "حساس"
+        # consent: if either source is compromised, joined is tainted
+        if a.consent != "VIP" or b.consent != "VIP":
+            joined.consent = "دو نمبری"
+        self.globals[n.result] = joined
+        print(paint(f"✓ جوڑ: {n.a} ⨝ {n.b} → {n.result} (سمدھی between {n.a} ↔ {n.b})", "bold"))
+
+    def _x_QueryUstaadChain(self, n):
+        k = self._lookup(n.name, n.line)
+        # walk parents only via استاد edges
+        chain = []
+        seen = {k.id}
+        stack = [(rel, p) for rel, p in k.parents if rel == "استاد"]
+        while stack:
+            rel, p = stack.pop()
+            if p.id in seen: continue
+            seen.add(p.id)
+            chain.append((rel, p))
+            stack.extend((r, pp) for r, pp in p.parents if r == "استاد")
+        if not chain:
+            print(f"{n.name}: کوئی استاد نہیں ملا")
+            return
+        print(paint(f"{n.name} کی استاد چین:", "bold"))
+        for rel, a in chain:
             print(f"  ← {rel}: {a.name} = {_show_safe(a)} {_tags(a)}")
 
     def _x_QueryLeak(self, n):

@@ -178,7 +178,21 @@ Every binary operation creates a new کردار whose parents are the operands. 
 | `رشتہ <a> سے <b>` | query the rishta path between two کردار |
 | `پھوٹ <expr>` | print with consent / trust / sensitivity tags |
 
-Relationship names accepted: `باپ`, `ماں`, `بیٹا`, `بیٹی`, `بہن`, `چچا`, `ماموں`, `دادا`, `نانا`, `والد`.
+### Typed-edge primitives (v0.3)
+
+These use Karachi kinship vocabulary to encode relationships that conventional lineage tools have no word for:
+
+| Statement | Edge created | Computational meaning |
+|---|---|---|
+| `استاد <model> = <data>` | `استاد` (teacher) | training-data → model lineage; AI governance — the most-asked edge in ML auditing |
+| `استاد_چین <name>` | — | walk the `استاد` chain only — list every training source up the lineage |
+| `سوتن <child> = <fallback>` | `سوتن` (co-wife) | fallback parent / `COALESCE` / A-B alternative source |
+| `گواہ <name> = <source>` | `گواہ` (witness) | read-only audit snapshot of `<source>`'s value at this moment |
+| `جوڑ <a> سے <b> بنا <c>` | `بیوی` + `شوہر` | JOIN — `c` is a marriage of `a` and `b`; sources are implicitly `سمدھی` (co-in-laws) |
+
+Relationship labels in the lineage graph: `باپ` `ماں` `بیٹا` `بیٹی` `بہن` `چچا` `ماموں` `دادا` `نانا` `والد` `استاد` `شاگرد` `سوتن` `گواہ` `بیوی` `شوہر` `سمدھی`.
+
+This is **~50× richer** than the 3-edge ontology of OpenLineage / DataHub / Marquez. See [`examples/rishta_typed.bhai`](examples/rishta_typed.bhai).
 
 ### Example — GDPR cascade
 
@@ -228,9 +242,11 @@ In بھائی these are runtime-intrinsic: the answer to every question is alrea
 
 ## Roadmap
 
-- **v0.3** — `سیٹ` (freeze), `سافٹویئر اپڈیٹ` (versioned mutation), `ڈنڈی ماری` (tamper marks), `اوقات دکھا` (assertions)
+- **v0.3** ✓ — typed rishta edges: `استاد` (training), `سوتن` (fallback), `گواہ` (audit snapshot), `جوڑ` (JOIN)
 - **v0.4** — serialized `شجرہ`: save/load lineage across runs — the compliance audit kit
-- **v0.5** — compile-to-Python: embed the رشتہ runtime in existing Python codebases
+- **v0.5** — more typed edges: `دشمن` (adversarial), `سمدھی` (cross-table joins), `بھتیجا/بھانجا` (paternal/maternal sibling pipelines), `لے_پالک` (external import), `رضاعی` (cached/mirrored)
+- **v0.6** — `سیٹ` (freeze), `سافٹویئر_اپڈیٹ` (versioned mutation), `ڈنڈی_ماری` (tamper marks), `اوقات_دکھا` (assertions)
+- **v0.7** — compile-to-Python: embed the رشتہ runtime in existing Python codebases
 - **v1.0** — bytecode VM
 - **v2.0** — Rust runtime + LLVM backend
 
