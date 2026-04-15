@@ -1,30 +1,29 @@
 # Paper
 
-`bhai.tex` — research paper formalizing the رشتہ semantics, kinship-typed lineage edges, and گواہی cryptographic protocol.
+Research paper formalizing the رشتہ semantics, kinship-typed lineage edges, and گواہی cryptographic protocol.
 
-## Compile
+Two source variants are kept in sync:
+- `bhai.typ` — **Typst** source (recommended; clean RTL handling, single-binary compiler)
+- `bhai.tex` — **LaTeX** source (XeLaTeX); kept for venue submission compatibility
 
-Requires **XeLaTeX** (Urdu script needs proper RTL shaping; pdflatex won't work).
+## Compile (recommended: Typst)
 
-Install once on macOS:
 ```sh
-brew install --cask mactex            # ~5GB; or install BasicTeX + missing packages on demand
-```
-
-Install the Urdu Nastaliq font (one-time):
-```sh
-# Noto Nastaliq Urdu — free, from Google Noto
-open https://fonts.google.com/noto/specimen/Noto+Nastaliq+Urdu
-# download the family, install Noto_Nastaliq_Urdu/static/NotoNastaliqUrdu-Regular.ttf
-```
-
-Build:
-```sh
+brew install typst       # ~50MB single binary
 cd paper/
-xelatex bhai.tex
-biber bhai            # or: bibtex bhai
-xelatex bhai.tex
-xelatex bhai.tex      # twice more to resolve refs
+typst compile bhai.typ   # → bhai.pdf
+```
+
+Requires **Noto Nastaliq Urdu** font. macOS ships it by default. Linux: `apt install fonts-noto-nastaliq` or download from Google Noto.
+
+## Compile (LaTeX)
+
+Requires **XeLaTeX** (Urdu script needs proper RTL shaping; pdflatex won't work). Note: tectonic 0.16+ segfaults on Nastaliq shaping on macOS Tahoe — use full TeX Live / MacTeX instead.
+
+```sh
+brew install --cask mactex   # ~5GB
+cd paper/
+xelatex bhai.tex && bibtex bhai && xelatex bhai.tex && xelatex bhai.tex
 ```
 
 Output: `bhai.pdf`.

@@ -6,10 +6,10 @@
 \documentclass[10pt,twocolumn]{article}
 
 % ─── Multi-script (English + Urdu) ───────────────────────────────────────
+% XeTeX + fontspec handles Arabic-script glyph shaping and RTL run direction
+% automatically. We deliberately avoid polyglossia/bidi (crash-prone with
+% tectonic) since the document is primarily English with inline Urdu.
 \usepackage{fontspec}
-\usepackage{polyglossia}
-\setdefaultlanguage{english}
-\setotherlanguage{urdu}
 \newfontfamily\urdufont[Script=Arabic, Scale=1.05]{Noto Nastaliq Urdu}
 \newcommand{\ur}[1]{{\urdufont #1}}
 
