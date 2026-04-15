@@ -199,6 +199,18 @@ The lineage graph survives across runs — yesterday's audit reloads byte-for-by
 
 The file is plain JSON — auditors can inspect it without بھائی installed. See [`examples/rishta_save.bhai`](examples/rishta_save.bhai) and [`examples/rishta_load.bhai`](examples/rishta_load.bhai) for the round-trip demo.
 
+### Adversarial / external / cached (v0.7)
+
+Five more typed primitives — covering security and import semantics:
+
+| Statement | Effect |
+|---|---|
+| `دشمن <name>` | mark کردار as **adversarial** (poisoned/attacker-controlled). Cascades to all descendants. Any future binary op involving an adversarial کردار produces an adversarial child. |
+| `دشمن_رساؤ <name>` | list every adversarial ancestor — security audit |
+| `لے_پالک <name> = <expr>` | declare کردار as **externally imported** (third-party API, file blob, foreign system). Has no native lineage. Tagged `[لے_پالک]` |
+| `رضاعی <name> = <source>` | کردار is a **cached / mirrored copy** of `<source>` (same content, separate identity). Trust + sensitivity + dushman inherited. Edge type: `رضاعی` |
+| `سمدھی <name>` | list **co-join partners** — every کردار that's been جوڑ'd with `<name>` (other parents of `<name>`'s children) |
+
 ### Typed-edge primitives (v0.3)
 
 These use Karachi kinship vocabulary to encode relationships that conventional lineage tools have no word for:
@@ -266,9 +278,9 @@ In بھائی these are runtime-intrinsic: the answer to every question is alrea
 - **v0.3** ✓ — typed rishta edges: `استاد` (training), `سوتن` (fallback), `گواہ` (audit snapshot), `جوڑ` (JOIN)
 - **v0.4** ✓ — serialized `شجرہ` (`سنبھال` / `اٹھا`): save and load the lineage graph across runs
 - **v0.5** ✓ — modules (`منگوا`): multi-file programs with cycle detection
-- **v0.6** — REPL for `rishta.py`, polish (literal-print special-case, source-context errors)
-- **v0.7** — more typed edges: `دشمن`, `بھتیجا/بھانجا`, `لے_پالک`, `رضاعی`, `سمدھی` first-class
+- **v0.7** ✓ — typed edges: `دشمن` (adversarial), `لے_پالک` (external import), `رضاعی` (cached/mirrored), `سمدھی` query, `دشمن_رساؤ` query
 - **v0.8** — stdlib: `فائل` (file IO), `وقت` (time), `حساب` (math), `جال` (regex)
+- **v0.6** (deferred) — REPL for `rishta.py`, polish (literal-print, source-context errors)
 - **v0.9** — `سیٹ` (freeze), `سافٹویئر_اپڈیٹ` (versioned mutation), `ڈنڈی_ماری` (tamper marks), `اوقات_دکھا` (assertions)
 - **v0.10** — compile-to-Python: embed the رشتہ runtime in existing Python codebases
 - **v1.0** — bytecode VM

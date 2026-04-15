@@ -33,7 +33,7 @@ def max_trust(a, b):
 
 
 class Kirdaar:
-    __slots__ = ("id", "name", "value", "parents", "children", "consent", "trust", "sensitivity", "line")
+    __slots__ = ("id", "name", "value", "parents", "children", "consent", "trust", "sensitivity", "dushman", "origin", "line")
 
     def __init__(self, value, name=None, line=None, trust=None, sensitivity=None):
         self.id = next(_counter)
@@ -44,6 +44,8 @@ class Kirdaar:
         self.consent = "VIP"              # VIP | دو نمبری | شاپنگ
         self.trust = trust                # None | بھائی | جانی
         self.sensitivity = sensitivity    # None | حساس
+        self.dushman = False              # adversarial flag
+        self.origin = None                # None | لے_پالک | رضاعی
         self.line = line
 
     def link(self, rel, parent):
@@ -93,6 +95,11 @@ KEYWORDS = {
     "سنبھال":     "SAVE",
     "اٹھا":       "LOAD",
     "منگوا":      "IMPORT",
+    "دشمن":       "DUSHMAN",
+    "لے_پالک":    "LEPALAK",
+    "رضاعی":      "RAZAI",
+    "سمدھی":      "Q_SAMDHI",
+    "دشمن_رساؤ":  "Q_DUSHMAN_LEAK",
     "پھوٹ":   "PRINT",
     "جنین":   "TRUE",
     "کدو":    "FALSE",
@@ -245,6 +252,16 @@ class LoadStmt:       path: str; line: int
 @dataclass
 class ImportStmt:     path: str; line: int
 @dataclass
+class DushmanMark:    name: str; line: int
+@dataclass
+class LepalakDecl:    name: str; expr: Any; line: int
+@dataclass
+class RazaiDecl:      name: str; source: str; line: int
+@dataclass
+class QuerySamdhi:    name: str; line: int
+@dataclass
+class QueryDushmanLeak: name: str; line: int
+@dataclass
 class PrintStmt:      expr: Any; line: int
 @dataclass
 class Binary:         op: str; left: Any; right: Any; line: int
@@ -293,6 +310,11 @@ class Parser:
         if t.kind == "SAVE":       return self._save_load(SaveStmt)
         if t.kind == "LOAD":       return self._save_load(LoadStmt)
         if t.kind == "IMPORT":     return self._save_load(ImportStmt)
+        if t.kind == "DUSHMAN":    return self._simple_q(DushmanMark, "کسے دشمن مارنا ہے؟")
+        if t.kind == "Q_DUSHMAN_LEAK": return self._simple_q(QueryDushmanLeak, "کس کا دشمن رساؤ؟")
+        if t.kind == "Q_SAMDHI":   return self._simple_q(QuerySamdhi, "کس کے سمدھی؟")
+        if t.kind == "LEPALAK":    return self._lepalak()
+        if t.kind == "RAZAI":      return self._typed_decl(RazaiDecl)
         if t.kind == "PRINT":      return self._print()
         raise BhaiError(f"یہ '{t.value}' یہاں کیا کر رہا ہے؟", t.line)
 
@@ -347,6 +369,15 @@ class Parser:
         parent = self._expect("IDENT", "کردار کا نام").value
         self._match("SEMI")
         return cls(child, parent, t.line)
+
+    def _lepalak(self):
+        # syntax: لے_پالک <name> = <expr>   (declares an externally-sourced kirdaar)
+        t = self._adv()
+        name = self._expect("IDENT", "کردار کا نام").value
+        self._expect("ASSIGN", "= چاہیے")
+        expr = self._expr()
+        self._match("SEMI")
+        return LepalakDecl(name, expr, t.line)
 
     def _gawah(self):
         # syntax: گواہ <name> = <source>
@@ -420,6 +451,9 @@ ANSI = {
     "جانی":    "\033[36m\033[1m",
     "بھائی":   "\033[36m",
     "حساس":    "\033[35m\033[1m",
+    "دشمن":    "\033[31m\033[1m",
+    "لے_پالک": "\033[34m",
+    "رضاعی":   "\033[34m\033[2m",
     "bold":    "\033[1m",
     "dim":     "\033[2m",
     "reset":   "\033[0m",
@@ -449,6 +483,10 @@ def _tags(k):
         parts.append(paint(f"[{k.trust}]", k.trust))
     if k.sensitivity:
         parts.append(paint(f"[{k.sensitivity}]", k.sensitivity))
+    if k.dushman:
+        parts.append(paint("[دشمن]", "دشمن"))
+    if k.origin:
+        parts.append(paint(f"[{k.origin}]", k.origin))
     return " ".join(parts)
 
 
@@ -583,7 +621,7 @@ class Interpreter:
         for k in self.globals.values():
             visit(k)
         data = {
-            "version": "0.4",
+            "version": "0.7",
             "saved_at": datetime.datetime.now().isoformat(),
             "kirdaars": [
                 {
@@ -593,6 +631,8 @@ class Interpreter:
                     "consent": k.consent,
                     "trust": k.trust,
                     "sensitivity": k.sensitivity,
+                    "dushman": k.dushman,
+                    "origin": k.origin,
                     "parents": [{"rel": rel, "id": p.id} for rel, p in k.parents],
                 }
                 for k in reachable.values()
@@ -630,8 +670,8 @@ class Interpreter:
         global _counter
         with open(n.path, encoding="utf-8") as f:
             data = json.load(f)
-        if data.get("version") != "0.4":
-            print(paint(f"⚠  پرانا فارمیٹ — version {data.get('version')}, expected 0.4", "شاپنگ"))
+        if data.get("version") not in ("0.4", "0.7"):
+            print(paint(f"⚠  پرانا فارمیٹ — version {data.get('version')}", "شاپنگ"))
         # phase 1: build kirdaars without edges
         by_id = {}
         for kd in data["kirdaars"]:
@@ -642,6 +682,8 @@ class Interpreter:
             k.consent = kd["consent"]
             k.trust = kd["trust"]
             k.sensitivity = kd["sensitivity"]
+            k.dushman = kd.get("dushman", False)
+            k.origin = kd.get("origin", None)
             k.parents = []
             k.children = []
             k.line = None
@@ -662,6 +704,72 @@ class Interpreter:
             f"✓ اٹھا لیا ← {n.path} ({len(by_id)} کردار, {len(self.globals)} global) — saved {saved_at}",
             "bold",
         ))
+
+    def _x_DushmanMark(self, n):
+        k = self._lookup(n.name, n.line)
+        k.dushman = True
+        seen = {k.id}
+        q = deque(c for _, c in k.children)
+        count = 0
+        while q:
+            ch = q.popleft()
+            if ch.id in seen: continue
+            seen.add(ch.id)
+            if not ch.dushman:
+                ch.dushman = True
+                count += 1
+            q.extend(c for _, c in ch.children)
+        print(paint(f"⚠  {n.name} اب دشمن — {count} اولاد بھی دشمن", "دشمن"))
+
+    def _x_LepalakDecl(self, n):
+        k = self._eval(n.expr)
+        k.name = n.name
+        k.parents = []          # adopted has no biological parents
+        k.origin = "لے_پالک"
+        self.globals[n.name] = k
+        print(paint(f"✓ لے_پالک: {n.name} = {_show_safe(k)} — باہر سے آیا", "bold"))
+
+    def _x_RazaiDecl(self, n):
+        # syntax: رضاعی <new> = <source>  → new is a cached/mirrored copy
+        src = self._lookup(n.source, n.line)
+        cached = Kirdaar(src.value, name=n.name, line=n.line)
+        cached.link("رضاعی", src)
+        cached.trust = src.trust
+        cached.sensitivity = src.sensitivity
+        cached.dushman = src.dushman
+        cached.origin = "رضاعی"
+        self.globals[n.name] = cached
+        print(paint(f"✓ رضاعی: {n.name} ← {n.source} (مرر/کیش)", "bold"))
+
+    def _x_QuerySamdhi(self, n):
+        k = self._lookup(n.name, n.line)
+        # سمدھی = co-parents through shared children (other parents of my children)
+        seen = {k.id}
+        results = []
+        for _, ch in k.children:
+            for orel, op in ch.parents:
+                if op.id != k.id and op.id not in seen:
+                    seen.add(op.id)
+                    results.append((ch, op))
+        if not results:
+            print(f"{n.name} کا کوئی سمدھی نہیں — کبھی جوڑ نہیں ہوا")
+            return
+        print(paint(f"{n.name} کے سمدھی:", "bold"))
+        for via, other in results:
+            print(f"  ↔ {other.name} = {_show_safe(other)} {_tags(other)} (via {via.name})")
+
+    def _x_QueryDushmanLeak(self, n):
+        k = self._lookup(n.name, n.line)
+        leaks = []
+        if k.dushman:
+            leaks.append(("خود", k))
+        leaks.extend((rel, a) for rel, a in self._ancestors(k) if a.dushman)
+        if not leaks:
+            print(paint(f"✓ {n.name}: کوئی دشمن رساؤ نہیں — صاف", "VIP"))
+            return
+        print(paint(f"⚠  {n.name} میں دشمن رساؤ — {len(leaks)} adversarial جد:", "دشمن"))
+        for rel, a in leaks:
+            print(f"  ← {rel}: {a.name} = {_show_safe(a)} {_tags(a)}")
 
     def _x_QueryUstaadChain(self, n):
         k = self._lookup(n.name, n.line)
@@ -743,6 +851,9 @@ class Interpreter:
         # sensitivity propagation: any حساس ancestor → child حساس
         if l.sensitivity or r.sensitivity:
             child.sensitivity = "حساس"
+        # dushman propagation: any adversarial ancestor → child adversarial
+        if l.dushman or r.dushman:
+            child.dushman = True
         return child
 
     # ── lineage queries ──

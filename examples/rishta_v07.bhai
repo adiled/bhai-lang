@@ -1,0 +1,36 @@
+# رشتہ v0.7 — adversarial, adopted, cached, samdhi
+# Five new typed primitives:
+#   دشمن X            — mark X as adversarial; cascades to descendants
+#   دشمن_رساؤ X       — list adversarial ancestors of X
+#   لے_پالک X = ...   — declare X as externally-imported (no native lineage)
+#   رضاعی X = src     — X is a cached/mirrored copy of src (same content, sep identity)
+#   سمدھی X           — list co-join partners (other parents of X's children)
+
+# === دشمن — adversarial input (poisoned data) ===
+کردار جعلی_فیچر = 9999
+دشمن جعلی_فیچر
+کردار سمجھدار_فیچر = 100
+کردار آمیزش = جعلی_فیچر + سمجھدار_فیچر    # auto-flagged دشمن
+
+پھوٹ آمیزش
+دشمن_رساؤ آمیزش
+
+# === لے_پالک — external import (third-party API, file blob) ===
+لے_پالک ای_پی_آئی_رسپانس = "third party blob"
+کردار پراسس = ای_پی_آئی_رسپانس + " — processed"
+شجرہ پراسس
+
+# === رضاعی — cached/mirrored copy ===
+کردار اصل = 1000 جانی حساس
+رضاعی کیش = اصل
+پھوٹ کیش
+شجرہ کیش
+
+# === سمدھی query — co-joins ===
+کردار صارفین = 100
+کردار آرڈرز = 50
+کردار ایونٹس = 30
+جوڑ صارفین سے آرڈرز بنا فل_ٹیبل
+جوڑ صارفین سے ایونٹس بنا اور_ٹیبل
+
+سمدھی صارفین
