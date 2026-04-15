@@ -79,6 +79,7 @@ Numeric literals accept Urdu digits: `۵۰` = 50. Strings use `"..."` with stand
 
 ### Built-ins
 
+**Core**
 | Function | Purpose |
 |---|---|
 | `لمبائی(x)` | length of string / list |
@@ -86,6 +87,39 @@ Numeric literals accept Urdu digits: `۵۰` = 50. Strings use `"..."` with stand
 | `نمبر(x)` / `لفظ(x)` | cast to number / string |
 | `ڈال(list, x)` / `نکال(list)` | push / pop |
 | `ترتیب(n)` / `ترتیب(a, b)` / `ترتیب(a, b, step)` | range |
+
+**فائل (file IO)**
+| Function | Purpose |
+|---|---|
+| `فائل_پڑھ(path)` | read text |
+| `فائل_لکھ(path, text)` | write (overwrite) |
+| `فائل_ضمیمہ(path, text)` | append |
+| `فائل_موجود(path)` | exists? |
+| `فائل_حذف(path)` | delete (idempotent) |
+
+**وقت (time)**
+| Function | Purpose |
+|---|---|
+| `وقت_ابھی()` | current Unix timestamp |
+| `وقت_فارمیٹ(ts)` | ISO 8601 formatted string |
+
+**حساب (math)**
+| Function | Purpose |
+|---|---|
+| `حساب_جذر(x)` / `حساب_طاقت(b, e)` | sqrt / pow |
+| `حساب_مطلق(x)` / `حساب_فرش(x)` / `حساب_چھت(x)` | abs / floor / ceil |
+| `حساب_بے_ترتیب()` | random float [0, 1) |
+| `حساب_پائی()` / `حساب_ای()` | π / e |
+
+**جال (regex)**
+| Function | Purpose |
+|---|---|
+| `جال_میچ(pat, text)` | full match → bool |
+| `جال_ڈھونڈ(pat, text)` | first match or null |
+| `جال_تمام(pat, text)` | list of all matches |
+| `جال_بدل(pat, repl, text)` | substitute |
+
+See [`examples/stdlib_demo.bhai`](examples/stdlib_demo.bhai) for a real log-analyzer program using all four modules.
 
 ### Example — recursion + loops
 
@@ -279,7 +313,7 @@ In بھائی these are runtime-intrinsic: the answer to every question is alrea
 - **v0.4** ✓ — serialized `شجرہ` (`سنبھال` / `اٹھا`): save and load the lineage graph across runs
 - **v0.5** ✓ — modules (`منگوا`): multi-file programs with cycle detection
 - **v0.7** ✓ — typed edges: `دشمن` (adversarial), `لے_پالک` (external import), `رضاعی` (cached/mirrored), `سمدھی` query, `دشمن_رساؤ` query
-- **v0.8** — stdlib: `فائل` (file IO), `وقت` (time), `حساب` (math), `جال` (regex)
+- **v0.8** ✓ — stdlib for `bhai.py`: فائل (file IO), وقت (time), حساب (math), جال (regex) — 19 builtins
 - **v0.6** (deferred) — REPL for `rishta.py`, polish (literal-print, source-context errors)
 - **v0.9** — `سیٹ` (freeze), `سافٹویئر_اپڈیٹ` (versioned mutation), `ڈنڈی_ماری` (tamper marks), `اوقات_دکھا` (assertions)
 - **v0.10** — compile-to-Python: embed the رشتہ runtime in existing Python codebases

@@ -4,6 +4,11 @@
 
 import os
 import sys
+import re
+import math
+import time
+import random
+import datetime
 from dataclasses import dataclass
 from typing import Any
 
@@ -540,6 +545,30 @@ class Interpreter:
         g.set("ڈال",    Builtin("ڈال",    _b_push))   # push
         g.set("نکال",   Builtin("نکال",   _b_pop))    # pop
         g.set("ترتیب",  Builtin("ترتیب",  _b_range))  # range
+        # ── stdlib v0.8 ──
+        # فائل (file IO)
+        g.set("فائل_پڑھ",      Builtin("فائل_پڑھ",      _b_file_read))
+        g.set("فائل_لکھ",      Builtin("فائل_لکھ",      _b_file_write))
+        g.set("فائل_ضمیمہ",    Builtin("فائل_ضمیمہ",    _b_file_append))
+        g.set("فائل_موجود",    Builtin("فائل_موجود",    _b_file_exists))
+        g.set("فائل_حذف",      Builtin("فائل_حذف",      _b_file_delete))
+        # وقت (time)
+        g.set("وقت_ابھی",      Builtin("وقت_ابھی",      _b_time_now))
+        g.set("وقت_فارمیٹ",    Builtin("وقت_فارمیٹ",    _b_time_fmt))
+        # حساب (math)
+        g.set("حساب_جذر",       Builtin("حساب_جذر",       _b_sqrt))
+        g.set("حساب_طاقت",      Builtin("حساب_طاقت",      _b_pow))
+        g.set("حساب_مطلق",      Builtin("حساب_مطلق",      _b_abs))
+        g.set("حساب_فرش",       Builtin("حساب_فرش",       _b_floor))
+        g.set("حساب_چھت",       Builtin("حساب_چھت",       _b_ceil))
+        g.set("حساب_بے_ترتیب",  Builtin("حساب_بے_ترتیب",  _b_random))
+        g.set("حساب_پائی",      Builtin("حساب_پائی",      _b_pi))
+        g.set("حساب_ای",        Builtin("حساب_ای",        _b_e))
+        # جال (regex)
+        g.set("جال_میچ",        Builtin("جال_میچ",        _b_re_match))
+        g.set("جال_ڈھونڈ",      Builtin("جال_ڈھونڈ",      _b_re_search))
+        g.set("جال_تمام",       Builtin("جال_تمام",       _b_re_findall))
+        g.set("جال_بدل",        Builtin("جال_بدل",        _b_re_sub))
 
     def run(self, program):
         for stmt in program.stmts:
@@ -810,6 +839,118 @@ def _b_range(args, line):
     if len(args) == 2: return list(range(int(args[0]), int(args[1])))
     if len(args) == 3: return list(range(int(args[0]), int(args[1]), int(args[2])))
     raise BhaiError("ترتیب(end) یا ترتیب(start, end) یا ترتیب(start, end, step)", line)
+
+
+# ── stdlib v0.8: فائل / وقت / حساب / جال ──
+
+def _b_file_read(args, line):
+    if len(args) != 1: raise BhaiError("فائل_پڑھ(path) چاہیے", line)
+    try:
+        with open(args[0], encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        raise BhaiError(f"فائل نہیں ملی: {args[0]}", line)
+    except Exception as e:
+        raise BhaiError(f"فائل پڑھنے میں خرابی: {e}", line)
+
+def _b_file_write(args, line):
+    if len(args) != 2: raise BhaiError("فائل_لکھ(path, text) چاہیے", line)
+    try:
+        with open(args[0], "w", encoding="utf-8") as f:
+            f.write(_stringify(args[1]))
+        return None
+    except Exception as e:
+        raise BhaiError(f"فائل لکھنے میں خرابی: {e}", line)
+
+def _b_file_append(args, line):
+    if len(args) != 2: raise BhaiError("فائل_ضمیمہ(path, text) چاہیے", line)
+    try:
+        with open(args[0], "a", encoding="utf-8") as f:
+            f.write(_stringify(args[1]))
+        return None
+    except Exception as e:
+        raise BhaiError(f"فائل ضمیمہ میں خرابی: {e}", line)
+
+def _b_file_exists(args, line):
+    if len(args) != 1: raise BhaiError("فائل_موجود(path) چاہیے", line)
+    return os.path.exists(args[0])
+
+def _b_file_delete(args, line):
+    if len(args) != 1: raise BhaiError("فائل_حذف(path) چاہیے", line)
+    try:
+        os.remove(args[0])
+        return None
+    except FileNotFoundError:
+        return None  # already gone, idempotent
+    except Exception as e:
+        raise BhaiError(f"فائل حذف نہیں ہوئی: {e}", line)
+
+def _b_time_now(args, line):
+    if args: raise BhaiError("وقت_ابھی() کو argument نہیں چاہیے", line)
+    return time.time()
+
+def _b_time_fmt(args, line):
+    if len(args) != 1: raise BhaiError("وقت_فارمیٹ(timestamp) چاہیے", line)
+    try:
+        return datetime.datetime.fromtimestamp(args[0]).isoformat(timespec="seconds")
+    except Exception as e:
+        raise BhaiError(f"وقت format نہیں ہوا: {e}", line)
+
+def _b_sqrt(args, line):
+    if len(args) != 1: raise BhaiError("حساب_جذر(x) چاہیے", line)
+    return math.sqrt(args[0])
+
+def _b_pow(args, line):
+    if len(args) != 2: raise BhaiError("حساب_طاقت(base, exp) چاہیے", line)
+    return math.pow(args[0], args[1])
+
+def _b_abs(args, line):
+    if len(args) != 1: raise BhaiError("حساب_مطلق(x) چاہیے", line)
+    return abs(args[0])
+
+def _b_floor(args, line):
+    if len(args) != 1: raise BhaiError("حساب_فرش(x) چاہیے", line)
+    return math.floor(args[0])
+
+def _b_ceil(args, line):
+    if len(args) != 1: raise BhaiError("حساب_چھت(x) چاہیے", line)
+    return math.ceil(args[0])
+
+def _b_random(args, line):
+    if args: raise BhaiError("حساب_بے_ترتیب() کو argument نہیں چاہیے", line)
+    return random.random()
+
+def _b_pi(args, line):  return math.pi
+def _b_e(args, line):   return math.e
+
+def _b_re_match(args, line):
+    if len(args) != 2: raise BhaiError("جال_میچ(pattern, text) چاہیے", line)
+    try:
+        return bool(re.fullmatch(args[0], args[1]))
+    except re.error as err:
+        raise BhaiError(f"regex خراب: {err}", line)
+
+def _b_re_search(args, line):
+    if len(args) != 2: raise BhaiError("جال_ڈھونڈ(pattern, text) چاہیے", line)
+    try:
+        m = re.search(args[0], args[1])
+        return m.group(0) if m else None
+    except re.error as err:
+        raise BhaiError(f"regex خراب: {err}", line)
+
+def _b_re_findall(args, line):
+    if len(args) != 2: raise BhaiError("جال_تمام(pattern, text) چاہیے", line)
+    try:
+        return re.findall(args[0], args[1])
+    except re.error as err:
+        raise BhaiError(f"regex خراب: {err}", line)
+
+def _b_re_sub(args, line):
+    if len(args) != 3: raise BhaiError("جال_بدل(pattern, replacement, text) چاہیے", line)
+    try:
+        return re.sub(args[0], args[1], args[2])
+    except re.error as err:
+        raise BhaiError(f"regex خراب: {err}", line)
 
 
 # ═══════════════════════════ ENTRY ═══════════════════════════

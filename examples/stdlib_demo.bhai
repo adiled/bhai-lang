@@ -1,0 +1,47 @@
+# stdlib v0.8 — فائل / وقت / حساب / جال
+
+# === فائل (file IO) ===
+فائل_لکھ("/tmp/bhai_hello.txt", "ابے دنیا!\n")
+فائل_ضمیمہ("/tmp/bhai_hello.txt", "دوسری سطر\n")
+سن content = فائل_پڑھ("/tmp/bhai_hello.txt")
+پھوٹ "فائل پڑھی:"
+پھوٹ content
+
+# === وقت (time) ===
+سن now = وقت_ابھی()
+پھوٹ "ابھی:", وقت_فارمیٹ(now)
+
+# === حساب (math) ===
+پھوٹ "جذر 144 =", حساب_جذر(144)
+پھوٹ "2^10 =", حساب_طاقت(2, 10)
+پھوٹ "|-7| =", حساب_مطلق(0 - 7)
+پھوٹ "فرش 3.7 =", حساب_فرش(3.7)
+پھوٹ "چھت 3.2 =", حساب_چھت(3.2)
+پھوٹ "π =", حساب_پائی()
+
+# === جال (regex) ===
+سن text = "phones: 0300-1234567, 0321-7654321, 0345-1112222"
+سن numbers = جال_تمام("0\\d{3}-\\d{7}", text)
+پھوٹ "ملے:", لمبائی(numbers), "نمبر"
+ہرایک ن میں numbers {
+    پھوٹ "  ", ن
+}
+
+# === Real program — log analyzer ===
+فائل_لکھ("/tmp/bhai_test.log", "INFO ok\nERROR connection failed\nINFO retry\nERROR timeout\nINFO done\n")
+سن log = فائل_پڑھ("/tmp/bhai_test.log")
+سن errors = جال_تمام("ERROR (.+)", log)
+سن stamp = وقت_فارمیٹ(وقت_ابھی())
+سن report = "report at " + stamp + ": " + لفظ(لمبائی(errors)) + " errors\n"
+ہرایک e میں errors {
+    report = report + "  - " + e + "\n"
+}
+فائل_لکھ("/tmp/bhai_report.txt", report)
+پھوٹ "report saved → /tmp/bhai_report.txt"
+پھوٹ "---"
+پھوٹ فائل_پڑھ("/tmp/bhai_report.txt")
+
+# cleanup
+فائل_حذف("/tmp/bhai_hello.txt")
+فائل_حذف("/tmp/bhai_test.log")
+فائل_حذف("/tmp/bhai_report.txt")
