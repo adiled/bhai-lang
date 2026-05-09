@@ -1,8 +1,8 @@
-// بھائی-lang — research paper (Typst version)
-// Compile with: typst compile bhai.typ
+// Rishta, research paper (Typst version)
+// Compile with: typst compile rishta.typ
 // Requires: Noto Nastaliq Urdu font installed (macOS ships with it).
 
-#set document(title: "Bhai-lang: Kinship-Typed Lineage", author: "Adil")
+#set document(title: "Rishta: Kinship-Typed Data Lineage", author: "adiled")
 #set page(paper: "us-letter", margin: 0.85in)
 #set text(font: "New Computer Modern", size: 10pt, lang: "en")
 #set par(justify: true, leading: 0.55em)
@@ -37,11 +37,11 @@
 #align(center)[
   #v(20pt)
   #text(size: 17pt, weight: "bold")[
-    #ur[بھائی]-lang: A Kinship-Typed Programming Language \
+    #ur[رشتہ] #h(0.4em) Rishta: A Karachi-Native Programming Language \
     for Cryptographically Verifiable Data Lineage
   ]
   #v(10pt)
-  #text(size: 11pt)[Adil] \
+  #text(size: 11pt)[adiled] \
   #text(size: 9pt, style: "italic")[Karachi]
   #v(15pt)
 ]
@@ -57,9 +57,9 @@
     insufficient for the lineage questions modern compliance, ML
     governance, and AI auditability actually demand.
 
-    We present #ur[بھائی]-lang, a programming language in which data
+    We present Rishta, a programming language in which data
     lineage is the runtime substrate rather than a post-hoc instrumentation
-    layer. Every value is a #emph[#ur[کردار]] (#emph[kirdaar] — character)
+    layer. Every value is a #emph[#ur[کردار]] (#emph[kirdaar], character)
     carrying its ancestry; every primitive operation extends a typed
     kinship graph in which $tilde$50 distinct edges encode relationships
     such as #ur[سوتن] (#emph[sautan]: fallback parent), #ur[سمدھی]
@@ -70,7 +70,7 @@
     equivalents.
 
     Every #ur[کردار] is content-addressable via a Merkle-chained SHA-256
-    we call #ur[گواہی] (#emph[gawahi] — testimony). The cryptographic
+    we call #ur[گواہی] (#emph[gawahi], testimony). The cryptographic
     structure makes lineage #emph[verifiable] rather than vendor-asserted:
     a recipient of a serialised lineage graph can confirm, without
     trusting the producer, that no value or edge has been altered.
@@ -104,7 +104,7 @@ nondeterministic chains whose provenance disappears within hours
 The dominant industry response is bolt-on instrumentation. Tools such
 as OpenLineage @openlineage, DataHub @datahub, and Marquez @marquez
 expose APIs that data-producing systems may call to record lineage
-events. They are voluntary, eventually consistent, and — critically —
+events. They are voluntary, eventually consistent, and, critically,
 operate over a vocabulary of three relationships: #smallcaps[derived_from],
 #smallcaps[depends_on], and #smallcaps[contains]. This impoverished
 type system cannot distinguish
@@ -136,7 +136,7 @@ relationship distinctions data systems have always lacked names for.
 
 == Contributions
 
-+ A programming-language design (#ur[بھائی]-lang) in which lineage is
++ A programming-language design (Rishta) in which lineage is
   the runtime substrate rather than an annotation layer (§3).
 
 + A kinship-typed lineage edge ontology of $tilde$50 distinct
@@ -166,7 +166,7 @@ single #smallcaps[output_of] relation.
 == Capability and information-flow languages
 
 Capability-secure languages (E @e-language, Pony @pony, Monte @monte)
-carry authority alongside values, ensuring that holding a reference
+carry authority alongside values, so that holding a reference
 confers the right to use it. Information-flow type systems
 (FlowCaml @flowcaml, Jif @jif, LIO @lio) propagate confidentiality
 labels through computation. Both bodies of work bear on lineage but
@@ -178,7 +178,7 @@ structure.
 
 Feast @feast, Tecton @tecton, MLflow @mlflow, and Weights & Biases
 @wandb record feature and experiment lineage. Their semantics are
-nominal — every artefact has a name and a parent set — but the edges
+nominal, every artefact has a name and a parent set, but the edges
 are typed only as #smallcaps[produced] or #smallcaps[used]. "Did this
 feature derive from sensitive data?" is, in 2025, still answered by
 manual code audit at every team we have spoken to.
@@ -206,11 +206,11 @@ Merkle-chained.
     [Marquez @marquez], [3],
     [PROV-DM @prov-dm], [13],
     [Atlan @atlan], [5],
-    [*#ur[بھائی]-lang* (this work)], [*$tilde$50*],
+    [*Rishta* (this work)], [*$tilde$50*],
   ),
   caption: [Edge-type expressivity across data-lineage systems.
     PROV-DM is the formal academic baseline; commercial tools have
-    collapsed it further. #ur[بھائی]-lang ships with $tilde$50 typed
+    collapsed it further. Rishta ships with $tilde$50 typed
     edges drawn from Urdu kinship vocabulary.],
 )
 
@@ -218,7 +218,7 @@ Merkle-chained.
 
 == The #ur[کردار] value model
 
-Every value in #ur[بھائی] is a #ur[کردار] (kirdaar) — a record
+Every value in Rishta is a #ur[کردار] (kirdaar), a record
 carrying:
 
 - a primitive value (number, string, boolean, list, null);
@@ -235,7 +235,7 @@ carrying:
 
 Every primitive operation #emph[constructs] edges. Binary arithmetic
 `c = a + b` yields a fresh #ur[کردار] $c$ with
-#h(0pt) parents$(c) = {(#ur[باپ], a), (#ur[ماں], b)}$ — left operand
+#h(0pt) parents$(c) = {(#ur[باپ], a), (#ur[ماں], b)}$, left operand
 as paternal lineage, right operand as maternal. Higher-arity operations
 (joins, training declarations) construct correspondingly typed edges.
 
@@ -263,7 +263,7 @@ propagate as taint, and consent demotes upon any compromised ancestor.
 The full ontology contains $tilde$50 entries derived from the kinship
 structure of Urdu, including paternal-versus-maternal nephew
 (#ur[بھتیجا] vs #ur[بھانجا]), co-brothers-in-law via married sisters
-(#ur[ہم‌زلف]), milk-kin (#ur[رضاعی]), and adopted (#ur[لے‌پالک]) —
+(#ur[ہم‌زلف]), milk-kin (#ur[رضاعی]), and adopted (#ur[لے‌پالک]),
 each with a distinct semantic. Selected core edges:
 
 #figure(
@@ -280,7 +280,7 @@ each with a distinct semantic. Selected core edges:
     [#ur[شاگرد]], [apprentice], [inverse of #ur[استاد]],
     [#ur[سوتن]], [co-wife], [fallback parent / `COALESCE`],
     [#ur[گواہ]], [witness], [read-only audit snapshot],
-    [#ur[بیوی] / #ur[شوہر]], [wife / husband], [JOIN — merged value],
+    [#ur[بیوی] / #ur[شوہر]], [wife / husband], [JOIN, merged value],
     [#ur[سمدھی]], [co-in-laws], [JOIN-induced cross-source rel.],
     [#ur[ہم‌زلف]], [co-brothers-in-law], [parallel pipelines, common JOIN],
     [#ur[بھتیجا]], [paternal nephew], [paternal-side sibling pipeline],
@@ -307,19 +307,19 @@ fall through to an alternative if the primary is unavailable. SQL
 implements this as `COALESCE`; ML pipelines implement it as model
 ensembles or A/B tests. In each case, the #emph[relationship] between
 the two parents and the child is absent from the lineage graph.
-#ur[بھائی] encodes it as a #ur[سوتن] edge — declaratively, an
+Rishta encodes it as a #ur[سوتن] edge, declaratively, an
 alternative parent of equal lineage standing.
 
 *#ur[سمدھی] (co-in-laws) as JOIN-induced relation.* When tables `users`
 and `orders` are joined, the rows of the result are children of both.
-The relationship between `users` and `orders` themselves — they have
-shared descendants — is what kinship terms #emph[co-in-laws]. Every
+The relationship between `users` and `orders` themselves, they have
+shared descendants, is what kinship terms #emph[co-in-laws]. Every
 JOIN in a data warehouse creates a #ur[سمدھی] relationship; no lineage
-tool surfaces it. #ur[بھائی] does so by construction.
+tool surfaces it. Rishta does so by construction.
 
 *#ur[استاد] (teacher) as training edge.* The training-data-to-model
 edge is the most-asked-about relationship in AI governance and the
-least-typed in lineage tools. #ur[بھائی] represents it directly: a
+least-typed in lineage tools. Rishta represents it directly: a
 model is a #ur[شاگرد] of its training data; the
 `#ur[استاد_چین] <model>` query walks only #ur[استاد] edges, yielding
 the complete training provenance.
@@ -372,8 +372,8 @@ audit graphs we construct in §7 (10–100 nodes), verification completes
 in milliseconds.
 
 *What it does not catch.* A producer can elide #ur[کردار] entirely
-from the serialised graph — the hash of the omitted node is simply
-absent. #ur[بھائی] addresses elision orthogonally via globals tracking,
+from the serialised graph, the hash of the omitted node is simply
+absent. Rishta addresses elision orthogonally via globals tracking,
 but a determined producer with no external commitment can still omit.
 We discuss external anchoring in §8.
 
@@ -390,11 +390,11 @@ mismatch. We have validated this end-to-end on a graph of 5
 The reference implementation is two tree-walking interpreters in
 $tilde$1,500 lines of Python:
 
-- `bhai.py` — a general-purpose language with closures, control flow,
+- `bhai.py`, a general-purpose language with closures, control flow,
   lists, and a 19-builtin standard library (file IO, time, math,
   regex). Useful for writing real programs that interact with the
   operating system.
-- `rishta.py` — the lineage-native DSL described in this paper. No
+- `rishta.py`, the lineage-native DSL described in this paper. No
   control flow; programs are sequences of declarations and queries
   against the lineage graph.
 
@@ -415,10 +415,10 @@ with no third-party dependencies.
 ```
 کردار صارف = "ali@karachi.pk" حساس جانی
 کردار پروفائل = صارف + " (کراچی)"
-کردار رپورٹ = پروفائل + " — اپریل 2026"
+کردار رپورٹ = پروفائل + ", اپریل 2026"
 
 تپکا صارف
-# ⚠ صارف تپکا — 4 اولاد دو نمبری ہوئی
+# ⚠ صارف تپکا, 4 اولاد دو نمبری ہوئی
 پھوٹ رپورٹ
 # رپورٹ: (ہائیڈ) [دو نمبری] [جانی] [حساس]
 ```
@@ -431,19 +431,19 @@ The compliance team's three-week audit becomes a four-token statement.
 == ML feature PII leak detection
 
 ```
-کردار سی_این_آئی_سی = 4210112345678 حساس
+کردار سی_این_آئی_سی = 4250112345678 حساس
 کردار عمر = 25
 کردار ماڈل_فیچر = سی_این_آئی_سی + عمر
 رساؤ ماڈل_فیچر
-# ⚠ حساس رساؤ — 2 حساس جد ملے:
+# ⚠ حساس رساؤ, 2 حساس جد ملے:
 #   ← خود: ماڈل_فیچر  [VIP] [حساس]
 #   ← باپ: سی_این_آئی_سی [VIP] [حساس]
 ```
 
 The #ur[رساؤ] (leak) query walks ancestors filtered by sensitivity.
 Any feature whose lineage includes a #ur[حساس] #ur[کردار] is flagged.
-This addresses the canonical question of ML governance — #emph[did
-sensitive data influence this prediction?] — by lineage walk rather
+This addresses the canonical question of ML governance, #emph[did
+sensitive data influence this prediction?], by lineage walk rather
 than code review.
 
 == JOIN provenance via #ur[سمدھی]
@@ -536,11 +536,17 @@ substrate behind Certificate Transparency and presents a general
 append-only Merkle log. Our #ur[گواہی] differs in being structured
 over the lineage DAG itself, not over an opaque event sequence.
 
+A separate project, #emph[bhai-lang] @bhai-toy by Singh and Tripathi,
+shares the colloquial word #emph[bhai] in its name. That work is a
+romanized-Latin Hindi-flavoured interpreter explicitly framed as
+entertainment. It overlaps with Rishta on neither vocabulary, script,
+semantics, nor goals; we mention it only to disambiguate the names.
+
 In programming-language design, work on effect systems @koka @frank
 and capability languages most closely parallels ours in treating a
 meta-property of values (effects, authority) as part of the type
-system. #ur[بھائی] extends this tradition to lineage, with the
-distinguishing feature that the relationship — not just the property —
+system. Rishta extends this tradition to lineage, with the
+distinguishing feature that the relationship, not just the property,
 is typed.
 
 = Conclusion
@@ -549,7 +555,7 @@ We have argued that data-lineage tools have been built on an
 impoverished vocabulary of three to thirteen edge types, and that this
 vocabulary gap is responsible for a wide class of unanswerable
 compliance, ML, and AI auditability questions. We presented
-#ur[بھائی]-lang, a programming language in which lineage is the runtime
+Rishta, a programming language in which lineage is the runtime
 substrate, edges are typed from a $tilde$50-term Karachi-Urdu kinship
 vocabulary, and every value is content-addressable through a
 Merkle-chained SHA-256 we call #ur[گواہی]. The reference implementation
@@ -560,8 +566,8 @@ The contribution of this paper is not the implementation but the
 conceptual move: #emph[lineage is not an annotation problem; it is a
 vocabulary problem solved by making derivation relationships
 first-class]. We invite the data-systems and programming-language
-communities to consider what other relationship vocabularies — drawn
-from the world's languages, not from English alone — might similarly
+communities to consider what other relationship vocabularies, drawn
+from the world's languages, not from English alone, might similarly
 enrich our tools.
 
 #bibliography("refs.bib", style: "ieee")

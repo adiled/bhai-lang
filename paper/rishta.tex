@@ -1,5 +1,5 @@
-% بھائی-lang — research paper
-% Compile with: xelatex bhai.tex && bibtex bhai && xelatex bhai.tex && xelatex bhai.tex
+% Rishta, research paper
+% Compile with: xelatex rishta.tex && bibtex rishta && xelatex rishta.tex && xelatex rishta.tex
 % Requires: XeLaTeX, polyglossia, fontspec, an Urdu Nastaliq font installed.
 % Tested with Noto Nastaliq Urdu (free, install from Google Noto).
 
@@ -45,12 +45,12 @@
 
 % ─── Title ───────────────────────────────────────────────────────────────
 \title{
-  \LARGE \ur{بھائی}-lang: A Kinship-Typed Programming Language\\
+  \LARGE \ur{رشتہ}\quad Rishta: A Karachi-Native Programming Language\\
   for Cryptographically Verifiable Data Lineage
   \vspace{4pt}
 }
 \author{
-  Adil \\
+  adiled \\
   \small Karachi
 }
 \date{}
@@ -60,9 +60,9 @@
 \begin{abstract}
 \noindent Conventional data-lineage tools (OpenLineage, DataHub, Marquez) treat provenance as an annotation layer over heterogeneous systems and recognise at most three coarse edge types: \textsc{derived\_from}, \textsc{depends\_on}, and \textsc{contains}. We argue this vocabulary is structurally insufficient for the lineage questions modern compliance, ML governance, and AI auditability actually demand.
 
-We present \ur{بھائی}-lang, a programming language in which data lineage is the runtime substrate rather than a post-hoc instrumentation layer. Every value is a \emph{\ur{کردار}} (\emph{kirdaar} — character) carrying its ancestry; every primitive operation extends a typed kinship graph in which $\sim$50 distinct edges encode relationships such as \ur{سوتن}~(\emph{sautan}: fallback parent), \ur{سمدھی}~(\emph{samdhi}: cross-table-join co-source), \ur{استاد}~(\emph{ustaad}: training-data $\to$ model), and \ur{گواہ}~(\emph{gawah}: audit observer). The vocabulary is drawn directly from Urdu kinship terms, for which English-derived data-systems language has no equivalents.
+We present Rishta, a programming language in which data lineage is the runtime substrate rather than a post-hoc instrumentation layer. Every value is a \emph{\ur{کردار}} (\emph{kirdaar}, character) carrying its ancestry; every primitive operation extends a typed kinship graph in which $\sim$50 distinct edges encode relationships such as \ur{سوتن}~(\emph{sautan}: fallback parent), \ur{سمدھی}~(\emph{samdhi}: cross-table-join co-source), \ur{استاد}~(\emph{ustaad}: training-data $\to$ model), and \ur{گواہ}~(\emph{gawah}: audit observer). The vocabulary is drawn directly from Urdu kinship terms, for which English-derived data-systems language has no equivalents.
 
-Every \ur{کردار} is content-addressable via a Merkle-chained SHA-256 we call \ur{گواہی} (\emph{gawahi} — testimony). The cryptographic structure makes lineage \emph{verifiable} rather than vendor-asserted: a recipient of a serialised lineage graph can confirm, without trusting the producer, that no value or edge has been altered.
+Every \ur{کردار} is content-addressable via a Merkle-chained SHA-256 we call \ur{گواہی} (\emph{gawahi}, testimony). The cryptographic structure makes lineage \emph{verifiable} rather than vendor-asserted: a recipient of a serialised lineage graph can confirm, without trusting the producer, that no value or edge has been altered.
 
 We describe the language design, type system, cryptographic protocol, and a $\sim$1{,}500-line reference implementation. We illustrate the approach on four case studies: GDPR delete cascade, ML feature PII leak detection, JOIN provenance via a kinship-typed merge, and tamper detection on a serialised audit. We argue that lineage-native runtime semantics are technically necessary, vocabulary-rich kinship typing is conceptually overdue, and Merkle-chained provenance is procurable.
 \end{abstract}
@@ -73,7 +73,7 @@ We describe the language design, type system, cryptographic protocol, and a $\si
 
 Data-lineage failures are expensive. The European Union has issued more than \euro{}4.5\,billion in GDPR penalties since 2018, a substantial fraction tied to inadequate ability to identify and delete derived data on request~\cite{gdpr-fines}. ML governance teams cannot reliably answer ``did sensitive feature $X$ contribute to this prediction?''~\cite{mlflow-lineage,featurestore}. AI agents call other agents in nondeterministic chains whose provenance disappears within hours~\cite{ai-agent-provenance}.
 
-The dominant industry response is bolt-on instrumentation. Tools such as OpenLineage~\cite{openlineage}, DataHub~\cite{datahub}, and Marquez~\cite{marquez} expose APIs that data-producing systems may call to record lineage events. They are voluntary, eventually consistent, and — critically — operate over a vocabulary of three relationships: \textsc{derived\_from}, \textsc{depends\_on}, and \textsc{contains}. This impoverished type system cannot distinguish
+The dominant industry response is bolt-on instrumentation. Tools such as OpenLineage~\cite{openlineage}, DataHub~\cite{datahub}, and Marquez~\cite{marquez} expose APIs that data-producing systems may call to record lineage events. They are voluntary, eventually consistent, and, critically, operate over a vocabulary of three relationships: \textsc{derived\_from}, \textsc{depends\_on}, and \textsc{contains}. This impoverished type system cannot distinguish
 
 \begin{itemize}
 \item a value derived from training data versus one derived from inference inputs;
@@ -90,7 +90,7 @@ Human kinship languages have $\sim$50 distinct relationship terms because we nee
 
 \paragraph{Contributions.}
 \begin{enumerate}
-\item A programming-language design (\ur{بھائی}-lang) in which lineage is the runtime substrate rather than an annotation layer (\S\ref{sec:design}).
+\item A programming-language design (Rishta) in which lineage is the runtime substrate rather than an annotation layer (\S\ref{sec:design}).
 \item A kinship-typed lineage edge ontology of $\sim$50 distinct relationships, with formal computational semantics for the core sub\-set (\S\ref{sec:typesystem}).
 \item A cryptographic testimony protocol (\ur{گواہی}) that makes lineage Merkle-chain verifiable, with $O(N)$ verification cost (\S\ref{sec:crypto}).
 \item A reference implementation in $\sim$1{,}500 lines of Python and four case studies (\S\ref{sec:impl}, \S\ref{sec:cases}).
@@ -106,11 +106,11 @@ The W3C PROV data model~\cite{prov-dm} formalises provenance as a tripartite gra
 
 \subsection{Capability and Information-Flow Languages}
 
-Capability-secure languages (E~\cite{e-language}, Pony~\cite{pony}, Monte~\cite{monte}) carry authority alongside values, ensuring that holding a reference confers the right to use it. Information-flow type systems (FlowCaml~\cite{flowcaml}, Jif~\cite{jif}, LIO~\cite{lio}) propagate confidentiality labels through computation. Both bodies of work bear on lineage but treat it as a property of \emph{access} or \emph{label}, not of derivation \emph{relationship}. They give us secrecy bits, not kinship structure.
+Capability-secure languages (E~\cite{e-language}, Pony~\cite{pony}, Monte~\cite{monte}) carry authority alongside values, so that holding a reference confers the right to use it. Information-flow type systems (FlowCaml~\cite{flowcaml}, Jif~\cite{jif}, LIO~\cite{lio}) propagate confidentiality labels through computation. Both bodies of work bear on lineage but treat it as a property of \emph{access} or \emph{label}, not of derivation \emph{relationship}. They give us secrecy bits, not kinship structure.
 
 \subsection{ML Lineage Tools}
 
-Feast~\cite{feast}, Tecton~\cite{tecton}, MLflow~\cite{mlflow}, and Weights~\&~Biases~\cite{wandb} record feature and experiment lineage. Their semantics are nominal — every artefact has a name and a parent set — but the edges are typed only as \textsc{produced} or \textsc{used}. ``Did this feature derive from sensitive data?'' is, in 2025, still answered by manual code audit at every team we have spoken to.
+Feast~\cite{feast}, Tecton~\cite{tecton}, MLflow~\cite{mlflow}, and Weights~\&~Biases~\cite{wandb} record feature and experiment lineage. Their semantics are nominal, every artefact has a name and a parent set, but the edges are typed only as \textsc{produced} or \textsc{used}. ``Did this feature derive from sensitive data?'' is, in 2025, still answered by manual code audit at every team we have spoken to.
 
 \subsection{Verifiable Provenance}
 
@@ -132,10 +132,10 @@ DataHub~\cite{datahub} & 4 \\
 Marquez~\cite{marquez} & 3 \\
 PROV-DM~\cite{prov-dm} & 13 \\
 Atlan~\cite{atlan} & 5 \\
-\textbf{\ur{بھائی}-lang (this work)} & \textbf{$\sim$50} \\
+\textbf{Rishta (this work)} & \textbf{$\sim$50} \\
 \hline
 \end{tabular}
-\caption{Edge-type expressivity across data-lineage systems. PROV-DM is the formal academic baseline; commercial tools have collapsed it further. \ur{بھائی}-lang ships with $\sim$50 typed edges drawn from Urdu kinship vocabulary.}
+\caption{Edge-type expressivity across data-lineage systems. PROV-DM is the formal academic baseline; commercial tools have collapsed it further. Rishta ships with $\sim$50 typed edges drawn from Urdu kinship vocabulary.}
 \label{tab:vocab-gap}
 \end{table}
 
@@ -145,7 +145,7 @@ Atlan~\cite{atlan} & 5 \\
 
 \subsection{The \ur{کردار} Value Model}
 
-Every value in \ur{بھائی} is a \ur{کردار} (kirdaar) — a record carrying:
+Every value in Rishta is a \ur{کردار} (kirdaar), a record carrying:
 
 \begin{itemize}
 \item a primitive value (number, string, boolean, list, null);
@@ -159,7 +159,7 @@ Every value in \ur{بھائی} is a \ur{کردار} (kirdaar) — a record carry
 
 \subsection{Operations and Edge Construction}
 
-Every primitive operation \emph{constructs} edges. Binary arithmetic \texttt{c = a + b} yields a fresh \ur{کردار} $c$ with $\mathsf{parents}(c) = \{(\ur{باپ}, a), (\ur{ماں}, b)\}$ — left operand as paternal lineage, right operand as maternal. Higher-arity operations (joins, training declarations) construct correspondingly typed edges.
+Every primitive operation \emph{constructs} edges. Binary arithmetic \texttt{c = a + b} yields a fresh \ur{کردار} $c$ with $\mathsf{parents}(c) = \{(\ur{باپ}, a), (\ur{ماں}, b)\}$, left operand as paternal lineage, right operand as maternal. Higher-arity operations (joins, training declarations) construct correspondingly typed edges.
 
 There is no opt-in. Lineage is created \emph{by construction} as a side effect of computation; it cannot be omitted, forgotten, or buggy.
 
@@ -183,7 +183,7 @@ Trust is monotone under join, sensitivity and adversarial flags propagate as tai
 
 \subsection{Edge Vocabulary}
 
-Table~\ref{tab:edges} lists the core typed edges and their computational meaning. The full ontology contains $\sim$50 entries derived from the kinship structure of Urdu — including paternal-versus-maternal nephew (\ur{بھتیجا} vs \ur{بھانجا}), co-brothers-in-law via married sisters (\ur{ہم‌زلف}), milk-kin (\ur{رضاعی}), and adopted (\ur{لے‌پالک}) — each with a distinct semantic.
+Table~\ref{tab:edges} lists the core typed edges and their computational meaning. The full ontology contains $\sim$50 entries derived from the kinship structure of Urdu, including paternal-versus-maternal nephew (\ur{بھتیجا} vs \ur{بھانجا}), co-brothers-in-law via married sisters (\ur{ہم‌زلف}), milk-kin (\ur{رضاعی}), and adopted (\ur{لے‌پالک}), each with a distinct semantic.
 
 \begin{table*}[t]
 \centering
@@ -197,19 +197,19 @@ Edge & Literal Urdu meaning & Computational semantic \\
 \ur{استاد} (ustaad) & teacher & training-data $\to$ trained-model edge (ML governance) \\
 \ur{شاگرد} (shagird) & apprentice & inverse of \ur{استاد}: a model is a \ur{شاگرد} of its training set \\
 \ur{سوتن} (sautan) & co-wife & fallback parent: alternative derivation when primary is unavailable \\
-\ur{گواہ} (gawah) & witness & read-only audit snapshot — sees the value but does not consume \\
+\ur{گواہ} (gawah) & witness & read-only audit snapshot, sees the value but does not consume \\
 \ur{بیوی}/\ur{شوہر} & wife / husband & a JOIN: two source values merged into a child \\
 \ur{سمدھی} (samdhi) & co-in-laws & two source values that share a JOIN child (cross-table relationship) \\
 \ur{ہم‌زلف} (ham-zulf) & co-brothers-in-law & parallel pipelines sharing a common JOIN partner \\
 \ur{بھتیجا} (bhateeja) & paternal nephew & value derived from a sibling-of-paternal-lineage \\
 \ur{بھانجا} (bhanja) & maternal nephew & value derived from a sibling-of-maternal-lineage \\
-\ur{چچازاد} (chacha-zaad) & paternal cousin & shares a paternal grandparent — same raw data, different pipeline \\
+\ur{چچازاد} (chacha-zaad) & paternal cousin & shares a paternal grandparent, same raw data, different pipeline \\
 \ur{رضاعی} (razai) & milk-kin & cached / mirrored copy: same content, separate identity \\
-\ur{لے‌پالک} (le-paalak) & adopted & externally imported — no native lineage in this run \\
+\ur{لے‌پالک} (le-paalak) & adopted & externally imported, no native lineage in this run \\
 \ur{دشمن} (dushman) & enemy & adversarial mark: do not derive from this without quarantine \\
 \hline
 \end{tabular}
-\caption{Core typed lineage edges in \ur{بھائی}-lang and their computational semantics. Each edge is a Karachi-Urdu kinship term whose social meaning maps directly onto a data-systems relationship that conventional vocabulary cannot name.}
+\caption{Core typed lineage edges in Rishta and their computational semantics. Each edge is a Karachi-Urdu kinship term whose social meaning maps directly onto a data-systems relationship that conventional vocabulary cannot name.}
 \label{tab:edges}
 \end{table*}
 
@@ -218,13 +218,13 @@ Edge & Literal Urdu meaning & Computational semantic \\
 Three edges in particular have no name in any data-systems tool we surveyed:
 
 \paragraph{\ur{سوتن} (co-wife) as fallback parent.}
-A common pattern in resilient computation is: derive a value from a primary source, but fall through to an alternative if the primary is unavailable. SQL implements this as \texttt{COALESCE}; ML pipelines implement it as model ensembles or A/B tests. In each case, the \emph{relationship} between the two parents and the child is absent from the lineage graph. \ur{بھائی} encodes it as a \ur{سوتن} edge — declaratively, an alternative parent of equal lineage standing.
+A common pattern in resilient computation is: derive a value from a primary source, but fall through to an alternative if the primary is unavailable. SQL implements this as \texttt{COALESCE}; ML pipelines implement it as model ensembles or A/B tests. In each case, the \emph{relationship} between the two parents and the child is absent from the lineage graph. Rishta encodes it as a \ur{سوتن} edge, declaratively, an alternative parent of equal lineage standing.
 
 \paragraph{\ur{سمدھی} (co-in-laws) as JOIN-induced relation.}
-When tables \texttt{users} and \texttt{orders} are joined, the rows of the result are children of both. The relationship between \texttt{users} and \texttt{orders} themselves — they have shared descendants — is what kinship terms \emph{co-in-laws}. Every JOIN in a data warehouse creates a \ur{سمدھی} relationship; no lineage tool surfaces it. \ur{بھائی} does so by construction.
+When tables \texttt{users} and \texttt{orders} are joined, the rows of the result are children of both. The relationship between \texttt{users} and \texttt{orders} themselves, they have shared descendants, is what kinship terms \emph{co-in-laws}. Every JOIN in a data warehouse creates a \ur{سمدھی} relationship; no lineage tool surfaces it. Rishta does so by construction.
 
 \paragraph{\ur{استاد} (teacher) as training edge.}
-The training-data-to-model edge is the most-asked-about relationship in AI governance and the least-typed in lineage tools. \ur{بھائی} represents it directly: a model is a \ur{شاگرد} of its training data; the \texttt{\ur{استاد\_چین} <model>} query walks only \ur{استاد} edges, yielding the complete training provenance.
+The training-data-to-model edge is the most-asked-about relationship in AI governance and the least-typed in lineage tools. Rishta represents it directly: a model is a \ur{شاگرد} of its training data; the \texttt{\ur{استاد\_چین} <model>} query walks only \ur{استاد} edges, yielding the complete training provenance.
 
 % ═════════════════════════════════════════════════════════════════════
 \section{Cryptographic Testimony (\ur{گواہی})}
@@ -261,7 +261,7 @@ The encoding $\mathsf{enc}$ is canonical JSON. Because $\mathsf{gawahi}$ is defi
 
 \paragraph{Verification cost.} Linear in the number of \ur{کردار}: each is hashed once, each parent edge contributes a constant-size string. For the audit graphs we construct in \S\ref{sec:cases} (10--100 nodes), verification completes in milliseconds.
 
-\paragraph{What it does \emph{not} catch.} A producer can elide \ur{کردار} entirely from the serialised graph — the hash of the omitted node is simply absent. \ur{بھائی} addresses elision orthogonally via globals tracking, but a determined producer with no external commitment can still omit. We discuss external anchoring in~\S\ref{sec:discussion}.
+\paragraph{What it does \emph{not} catch.} A producer can elide \ur{کردار} entirely from the serialised graph, the hash of the omitted node is simply absent. Rishta addresses elision orthogonally via globals tracking, but a determined producer with no external commitment can still omit. We discuss external anchoring in~\S\ref{sec:discussion}.
 
 \subsection{Round-trip Verification}
 
@@ -274,8 +274,8 @@ The \texttt{\ur{سنبھال}} primitive emits, alongside each \ur{کردار}, 
 The reference implementation is two tree-walking interpreters in $\sim$1{,}500 lines of Python:
 
 \begin{itemize}
-\item \texttt{bhai.py} — a general-purpose language with closures, control flow, lists, and a 19-builtin standard library (file IO, time, math, regex). Useful for writing real programs that interact with the operating system.
-\item \texttt{rishta.py} — the lineage-native DSL described in this paper. No control flow; programs are sequences of declarations and queries against the lineage graph.
+\item \texttt{bhai.py}, a general-purpose language with closures, control flow, lists, and a 19-builtin standard library (file IO, time, math, regex). Useful for writing real programs that interact with the operating system.
+\item \texttt{rishta.py}, the lineage-native DSL described in this paper. No control flow; programs are sequences of declarations and queries against the lineage graph.
 \end{itemize}
 
 Both interpreters share the same lexer architecture (Urdu identifier handling, Urdu digit literals \ur{۰}--\ur{۹}, Urdu punctuation \ur{،}~/~\ur{۔}). They support modules via \texttt{\ur{منگوا}} (cycle-detected import). The runtime is a graph of \ur{کردار} objects with cached-on-demand hash computation. Persistence emits canonical JSON; load verifies hashes before exposing globals.
@@ -291,10 +291,10 @@ The implementation is open-source~\cite{bhai-repo} and runs on Python 3.8+ with 
 \begin{lstlisting}[caption={GDPR cascade in 7 lines.},captionpos=b]
 کردار صارف = "ali@karachi.pk" حساس جانی
 کردار پروفائل = صارف + " (کراچی)"
-کردار رپورٹ = پروفائل + " — اپریل 2026"
+کردار رپورٹ = پروفائل + ", اپریل 2026"
 
 تپکا صارف
-# ⚠ صارف تپکا — 4 اولاد دو نمبری ہوئی
+# ⚠ صارف تپکا, 4 اولاد دو نمبری ہوئی
 پھوٹ رپورٹ
 # رپورٹ: (ہائیڈ) [دو نمبری] [جانی] [حساس]
 \end{lstlisting}
@@ -304,16 +304,16 @@ A single \ur{تپکا} (revoke) call cascades through every value derived from \
 \subsection{ML Feature PII Leak Detection}
 
 \begin{lstlisting}[caption={Feature provenance audit.},captionpos=b]
-کردار سی_این_آئی_سی = 4210112345678 حساس
+کردار سی_این_آئی_سی = 4250112345678 حساس
 کردار عمر = 25
 کردار ماڈل_فیچر = سی_این_آئی_سی + عمر
 رساؤ ماڈل_فیچر
-# ⚠ حساس رساؤ — 2 حساس جد ملے:
+# ⚠ حساس رساؤ, 2 حساس جد ملے:
 #   ← خود: ماڈل_فیچر [VIP] [حساس]
 #   ← باپ: سی_این_آئی_سی [VIP] [حساس]
 \end{lstlisting}
 
-The \ur{رساؤ} (leak) query walks ancestors filtered by sensitivity. Any feature whose lineage includes a \ur{حساس} \ur{کردار} is flagged. This addresses the canonical question of ML governance — \emph{did sensitive data influence this prediction?} — by lineage walk rather than code review.
+The \ur{رساؤ} (leak) query walks ancestors filtered by sensitivity. Any feature whose lineage includes a \ur{حساس} \ur{کردار} is flagged. This addresses the canonical question of ML governance, \emph{did sensitive data influence this prediction?}, by lineage walk rather than code review.
 
 \subsection{JOIN Provenance via \ur{سمدھی}}
 
@@ -370,14 +370,16 @@ Beyond the work surveyed in \S\ref{sec:background}: PASS~\cite{pass} pioneered O
 
 In the cryptographic-log space, Trillian~\cite{trillian} is the production substrate behind Certificate Transparency and presents a general append-only Merkle log. Our \ur{گواہی} differs in being structured over the lineage DAG itself, not over an opaque event sequence.
 
-In programming-language design, work on effect systems~\cite{koka,frank} and capability languages most closely parallels ours in treating a meta-property of values (effects, authority) as part of the type system. \ur{بھائی} extends this tradition to lineage, with the distinguishing feature that the relationship — not just the property — is typed.
+A separate project, \emph{bhai-lang}~\cite{bhai-toy} by Singh and Tripathi, shares the colloquial word \emph{bhai} in its name. That work is a romanized-Latin Hindi-flavoured interpreter explicitly framed as entertainment. It overlaps with Rishta on neither vocabulary, script, semantics, nor goals; we mention it only to disambiguate the names.
+
+In programming-language design, work on effect systems~\cite{koka,frank} and capability languages most closely parallels ours in treating a meta-property of values (effects, authority) as part of the type system. Rishta extends this tradition to lineage, with the distinguishing feature that the relationship, not just the property, is typed.
 
 % ═════════════════════════════════════════════════════════════════════
 \section{Conclusion}
 
-We have argued that data-lineage tools have been built on an impoverished vocabulary of three to thirteen edge types, and that this vocabulary gap is responsible for a wide class of unanswerable compliance, ML, and AI auditability questions. We presented \ur{بھائی}-lang, a programming language in which lineage is the runtime substrate, edges are typed from a $\sim$50-term Karachi-Urdu kinship vocabulary, and every value is content-addressable through a Merkle-chained SHA-256 we call \ur{گواہی}. The reference implementation is small ($\sim$1{,}500 lines of Python), demonstrates the approach end-to-end, and is freely available.
+We have argued that data-lineage tools have been built on an impoverished vocabulary of three to thirteen edge types, and that this vocabulary gap is responsible for a wide class of unanswerable compliance, ML, and AI auditability questions. We presented Rishta, a programming language in which lineage is the runtime substrate, edges are typed from a $\sim$50-term Karachi-Urdu kinship vocabulary, and every value is content-addressable through a Merkle-chained SHA-256 we call \ur{گواہی}. The reference implementation is small ($\sim$1{,}500 lines of Python), demonstrates the approach end-to-end, and is freely available.
 
-The contribution of this paper is not the implementation but the conceptual move: \emph{lineage is not an annotation problem; it is a vocabulary problem solved by making derivation relationships first-class}. We invite the data-systems and programming-language communities to consider what other relationship vocabularies — drawn from the world's languages, not from English alone — might similarly enrich our tools.
+The contribution of this paper is not the implementation but the conceptual move: \emph{lineage is not an annotation problem; it is a vocabulary problem solved by making derivation relationships first-class}. We invite the data-systems and programming-language communities to consider what other relationship vocabularies, drawn from the world's languages, not from English alone, might similarly enrich our tools.
 
 \printbibliography
 

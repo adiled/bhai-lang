@@ -1,4 +1,4 @@
-# stdlib v0.8 — فائل / وقت / حساب / جال
+# stdlib v0.8, فائل / وقت / حساب / جال
 
 # === فائل (file IO) ===
 فائل_لکھ("/tmp/bhai_hello.txt", "ابے دنیا!\n")
@@ -27,7 +27,7 @@
     پھوٹ "  ", ن
 }
 
-# === Real program — log analyzer ===
+# === Real program, log analyzer ===
 فائل_لکھ("/tmp/bhai_test.log", "INFO ok\nERROR connection failed\nINFO retry\nERROR timeout\nINFO done\n")
 سن log = فائل_پڑھ("/tmp/bhai_test.log")
 سن errors = جال_تمام("ERROR (.+)", log)

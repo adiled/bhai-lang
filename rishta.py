@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# بھائی — رشتہ primitive, Karachi-native vocabulary
+# Rishta, lineage-native dialect.
 # states: VIP (clean) | دو نمبری (tainted via lineage) | شاپنگ (revoked)
 # revoke verb: تپکا
 # trust: جانی > بھائی > (default), propagates max along lineage
@@ -344,7 +344,7 @@ class Parser:
         if self._match("COLON"):
             child = self._expect("IDENT", "کردار کا نام").value
             self._expect("KA", "'کا' چاہیے")
-            rel = self._expect("REL", "رشتہ کی قسم — باپ/ماں/بیٹا وغیرہ").value
+            rel = self._expect("REL", "رشتہ کی قسم, باپ/ماں/بیٹا وغیرہ").value
             parent = self._expect("IDENT", "کردار کا نام").value
             self._match("SEMI")
             return RishtaAssert(child, rel, parent, t.line)
@@ -471,7 +471,7 @@ def paint(s, key):
 
 def _hash_kirdaar(k, cache):
     """Deterministic SHA-256 over (value + tags + sorted parent rishta-edges).
-    Excludes the kirdaar's name — same content + lineage = same hash."""
+    Excludes the kirdaar's name, same content + lineage = same hash."""
     if k.id in cache:
         return cache[k.id]
     parent_proofs = sorted(
@@ -558,7 +558,7 @@ class Interpreter:
         b = self._lookup(n.b, n.line)
         path = self._find_path(a, b)
         if path is None:
-            print(f"{n.a} اور {n.b} اجنبی ہیں — کوئی رشتہ نہیں")
+            print(f"{n.a} اور {n.b} اجنبی ہیں, کوئی رشتہ نہیں")
             return
         chain = f"{n.a}"
         for rel, node in path:
@@ -568,7 +568,7 @@ class Interpreter:
     def _x_Revoke(self, n):
         k = self._lookup(n.name, n.line)
         count = k.tapka_cascade()
-        print(paint(f"⚠  {n.name} تپکا — {count} اولاد دو نمبری ہوئی", "شاپنگ"))
+        print(paint(f"⚠  {n.name} تپکا, {count} اولاد دو نمبری ہوئی", "شاپنگ"))
 
     def _x_QueryShajara(self, n):
         k = self._lookup(n.name, n.line)
@@ -588,7 +588,7 @@ class Interpreter:
         k = self._lookup(n.name, n.line)
         ancs = list(self._ancestors(k))
         if not ancs:
-            print(f"{n.name} یتیم ہے — کوئی جد نہیں"); return
+            print(f"{n.name} یتیم ہے, کوئی جد نہیں"); return
         print(paint(f"{n.name} کے جد:", "bold"))
         for rel, a in ancs:
             print(f"  ← {rel}: {a.name} = {_show_safe(a)} {_tags(a)}")
@@ -706,7 +706,7 @@ class Interpreter:
         with open(n.path, encoding="utf-8") as f:
             data = json.load(f)
         if data.get("version") not in ("0.4", "0.7", "0.9"):
-            print(paint(f"⚠  پرانا فارمیٹ — version {data.get('version')}", "شاپنگ"))
+            print(paint(f"⚠  پرانا فارمیٹ, version {data.get('version')}", "شاپنگ"))
         # phase 1: build kirdaars without edges
         by_id = {}
         for kd in data["kirdaars"]:
@@ -753,7 +753,7 @@ class Interpreter:
         saved_at = data.get("saved_at", "?")
         proof_msg = f", {verified} گواہی verified ✓" if verified else ""
         print(paint(
-            f"✓ اٹھا لیا ← {n.path} ({len(by_id)} کردار, {len(self.globals)} global{proof_msg}) — saved {saved_at}",
+            f"✓ اٹھا لیا ← {n.path} ({len(by_id)} کردار, {len(self.globals)} global{proof_msg}), saved {saved_at}",
             "bold",
         ))
 
@@ -771,7 +771,7 @@ class Interpreter:
                 ch.dushman = True
                 count += 1
             q.extend(c for _, c in ch.children)
-        print(paint(f"⚠  {n.name} اب دشمن — {count} اولاد بھی دشمن", "دشمن"))
+        print(paint(f"⚠  {n.name} اب دشمن, {count} اولاد بھی دشمن", "دشمن"))
 
     def _x_LepalakDecl(self, n):
         k = self._eval(n.expr)
@@ -779,7 +779,7 @@ class Interpreter:
         k.parents = []          # adopted has no biological parents
         k.origin = "لے_پالک"
         self.globals[n.name] = k
-        print(paint(f"✓ لے_پالک: {n.name} = {_show_safe(k)} — باہر سے آیا", "bold"))
+        print(paint(f"✓ لے_پالک: {n.name} = {_show_safe(k)}, باہر سے آیا", "bold"))
 
     def _x_RazaiDecl(self, n):
         # syntax: رضاعی <new> = <source>  → new is a cached/mirrored copy
@@ -804,7 +804,7 @@ class Interpreter:
                     seen.add(op.id)
                     results.append((ch, op))
         if not results:
-            print(f"{n.name} کا کوئی سمدھی نہیں — کبھی جوڑ نہیں ہوا")
+            print(f"{n.name} کا کوئی سمدھی نہیں, کبھی جوڑ نہیں ہوا")
             return
         print(paint(f"{n.name} کے سمدھی:", "bold"))
         for via, other in results:
@@ -822,9 +822,9 @@ class Interpreter:
             leaks.append(("خود", k))
         leaks.extend((rel, a) for rel, a in self._ancestors(k) if a.dushman)
         if not leaks:
-            print(paint(f"✓ {n.name}: کوئی دشمن رساؤ نہیں — صاف", "VIP"))
+            print(paint(f"✓ {n.name}: کوئی دشمن رساؤ نہیں, صاف", "VIP"))
             return
-        print(paint(f"⚠  {n.name} میں دشمن رساؤ — {len(leaks)} adversarial جد:", "دشمن"))
+        print(paint(f"⚠  {n.name} میں دشمن رساؤ, {len(leaks)} adversarial جد:", "دشمن"))
         for rel, a in leaks:
             print(f"  ← {rel}: {a.name} = {_show_safe(a)} {_tags(a)}")
 
@@ -854,9 +854,9 @@ class Interpreter:
             leaks.append(("خود", k))
         leaks.extend((rel, a) for rel, a in self._ancestors(k) if a.sensitivity)
         if not leaks:
-            print(paint(f"✓ {n.name}: کوئی حساس رساؤ نہیں — صاف ہے", "VIP"))
+            print(paint(f"✓ {n.name}: کوئی حساس رساؤ نہیں, صاف ہے", "VIP"))
             return
-        print(paint(f"⚠  {n.name} میں حساس رساؤ — {len(leaks)} حساس جد ملے:", "حساس"))
+        print(paint(f"⚠  {n.name} میں حساس رساؤ, {len(leaks)} حساس جد ملے:", "حساس"))
         for rel, a in leaks:
             print(f"  ← {rel}: {a.name} = {_show_safe(a)} {_tags(a)}")
 
@@ -879,7 +879,7 @@ class Interpreter:
         r = self._eval(n.right)
         if l.consent == "شاپنگ" or r.consent == "شاپنگ":
             bad = l.name if l.consent == "شاپنگ" else r.name
-            raise BhaiError(f"'{bad}' تپکا ہو چکا — اس پہ compute نہیں ہوگا", n.line)
+            raise BhaiError(f"'{bad}' تپکا ہو چکا, اس پہ compute نہیں ہوگا", n.line)
         try:
             if n.op == "+":
                 if isinstance(l.value, str) or isinstance(r.value, str):
@@ -889,7 +889,7 @@ class Interpreter:
             elif n.op == "-": v = l.value - r.value
             elif n.op == "*": v = l.value * r.value
             elif n.op == "/":
-                if r.value == 0: raise BhaiError("زیرو سے تقسیم — دماغ چل گیا", n.line)
+                if r.value == 0: raise BhaiError("زیرو سے تقسیم, دماغ چل گیا", n.line)
                 v = l.value / r.value
             elif n.op == "%": v = l.value % r.value
             else: raise BhaiError(f"op {n.op}?", n.line)
@@ -962,10 +962,10 @@ class Interpreter:
             return
         if k.consent == "دو نمبری":
             reason = "اجداد میں کوئی تپکا ہو چکا"
-            print(f"{k.name}: {paint('(ہائیڈ)', 'دو نمبری')} {_tags(k)} — {reason}")
+            print(f"{k.name}: {paint('(ہائیڈ)', 'دو نمبری')} {_tags(k)}, {reason}")
             return
         lineage = ", ".join(f"{rel}: {p.name}" for rel, p in k.parents) if k.parents else paint("یتیم", "dim")
-        print(f"{k.name}: {_show(k.value)} {_tags(k)} — {lineage}")
+        print(f"{k.name}: {_show(k.value)} {_tags(k)}, {lineage}")
 
     def _render_shajara(self, root):
         lines = []

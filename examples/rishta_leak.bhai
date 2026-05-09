@@ -1,11 +1,11 @@
 # ML feature leak detection
-# کوئی بھی feature جو حساس ڈیٹا سے بنا ہو — auto-tag
+# کوئی بھی feature جو حساس ڈیٹا سے بنا ہو, auto-tag
 
-کردار سی_این_آئی_سی = 4210112345678 حساس جانی
+کردار سی_این_آئی_سی = 4250112345678 حساس جانی
 کردار عمر = 25
 کردار شہر = "کراچی"
 
-# apparently-safe derived feature — but lineage leaks PII
+# apparently-safe derived feature, but lineage leaks PII
 کردار یوزر_ہیش = سی_این_آئی_سی + عمر
 کردار ماڈل_فیچر = یوزر_ہیش * 2
 

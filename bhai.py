@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# بھائی — کراچی کی سب سے بدتمیز پروگرامنگ زبان
-# v0.1 — tree-walking interpreter. Next: bytecode VM, then Rust port.
+# Rishta, general-purpose dialect (bhai). Karachi street-Urdu keywords.
+# v0.1, tree-walking interpreter. Next: bytecode VM, then Rust port.
 
 import os
 import sys
@@ -27,14 +27,14 @@ class BhaiError(Exception):
 # ═══════════════════════════ LEXER ═══════════════════════════
 
 KEYWORDS = {
-    "سن":     "VAR",       # listen up — variable declaration
+    "سن":     "VAR",       # listen up, variable declaration
     "پھوٹ":   "PRINT",     # burst out / speak
     "اگر":    "IF",
     "ورنہ":   "ELSE",
     "جبتک":   "WHILE",
     "ہرایک":  "FOREACH",
     "میں":    "IN",
-    "کام":    "FUNC",      # work/job — function
+    "کام":    "FUNC",      # work/job, function
     "کلٹی":   "RETURN",    # flip back
     "جنین":   "TRUE",      # genuine / real
     "کدو":    "FALSE",     # pumpkin / dud
@@ -977,7 +977,7 @@ def run_file(path):
 
 
 def repl():
-    print("بھائی REPL v0.1 — نکلنے کے لیے Ctrl+D")
+    print("بھائی REPL v0.1, نکلنے کے لیے Ctrl+D")
     interp = Interpreter()
     while True:
         try:
