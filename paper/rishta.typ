@@ -536,12 +536,6 @@ substrate behind Certificate Transparency and presents a general
 append-only Merkle log. Our #ur[گواہی] differs in being structured
 over the lineage DAG itself, not over an opaque event sequence.
 
-A separate project, #emph[bhai-lang] @bhai-toy by Singh and Tripathi,
-shares the colloquial word #emph[bhai] in its name. That work is a
-romanized-Latin Hindi-flavoured interpreter explicitly framed as
-entertainment. It overlaps with Rishta on neither vocabulary, script,
-semantics, nor goals; we mention it only to disambiguate the names.
-
 In programming-language design, work on effect systems @koka @frank
 and capability languages most closely parallels ours in treating a
 meta-property of values (effects, authority) as part of the type
